@@ -17,7 +17,7 @@ class OrderService {
         this.validateId(_id);
 
         const order = await OrderModel.findById(_id).exec();
-        if (!order) throw new NotFoundError(`Order with id ${_id} was not found`);
+        if (!order) throw new NotFoundError(`Order with _id ${_id} was not found`);
         return order;
     }
 
@@ -38,7 +38,7 @@ class OrderService {
             { new: true, runValidators: true }
         ).exec();
 
-        if (!updatedOrder) throw new NotFoundError(`Order with id ${_id} not found`);
+        if (!updatedOrder) throw new NotFoundError(`Order with _id ${_id} not found`);
         return updatedOrder;
     }
 
