@@ -3,11 +3,25 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+ "scripts": {
+    "dev:users": "npm --prefix services/user-service run dev",
+    "dev:orders": "npm --prefix services/order-service run dev",
+    "dev:products": "npm --prefix services/product-service run dev",
+    "dev:all": "concurrently \"npm run dev:users\" \"npm run dev:orders\" \"npm run dev:products\""
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs"
+  "type": "commonjs",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kidker95/microservices-sandbox.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Kidker95/microservices-sandbox/issues"
+  },
+  "homepage": "https://github.com/Kidker95/microservices-sandbox#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
 }
