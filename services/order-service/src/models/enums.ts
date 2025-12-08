@@ -21,3 +21,10 @@ export enum Currency {
     USD = "USD",
     EUR = "EUR"
 }
+
+export enum Size {
+    Small = "Small",
+    Medium = "Medium",
+    Large = "Large",
+    Extra_Large = "Extra Large"
+}

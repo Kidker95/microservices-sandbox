@@ -47,7 +47,7 @@ class ProductService {
     public async deleteProduct(_id: string): Promise<void> {
         this.validateId(_id);
         const deleted = await ProductModel.findByIdAndDelete(_id);
-        if (!deleted) throw new NotFoundError(`Product with id ${_id} not found`);
+        if (!deleted) throw new NotFoundError(`Product with _id ${_id} not found`);
 
     }
 

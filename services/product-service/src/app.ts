@@ -39,9 +39,9 @@ export class App {
 
 export const app = new App();
 
-const bootstap = async (): Promise<void> => {
+const bootstrap = async (): Promise<void> => {
     await dal.connect();
     app.start();
 }
-bootstap();
+bootstrap();
 
