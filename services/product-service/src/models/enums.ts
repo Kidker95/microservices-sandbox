@@ -9,13 +9,6 @@ export enum StatusCode {
     InternalServerError = 500
 }
 
-export enum OrderStatus {
-    Pending = "Pending",
-    Paid = "Paid",
-    Shipped = "Shipped",
-    Cancelled = "Cancelled"
-}
-
 export enum Currency {
     ILS = "ILS",
     USD = "USD",

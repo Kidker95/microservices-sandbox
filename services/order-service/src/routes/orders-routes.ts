@@ -9,6 +9,7 @@ export const ordersRouter = express.Router();
 ordersRouter.get("/", ordersController.getAllOrders.bind(ordersController));
 ordersRouter.get("/:orderId/user/:userId", ordersController.getOrderWithUser.bind(ordersController));
 ordersRouter.get("/:_id", ordersController.getOrderById.bind(ordersController));
+ordersRouter.get("/product/:_id", ordersController.getProductById.bind(ordersController));
 
 // POST
 ordersRouter.post("/", ordersController.addOrder.bind(ordersController));
@@ -18,4 +19,4 @@ ordersRouter.put("/:_id", ordersController.updateOrder.bind(ordersController));
 
 // DELETE
 
-ordersRouter.delete("/:_id",ordersController.deleteOrder.bind(ordersController));
+ordersRouter.delete("/:_id", ordersController.deleteOrder.bind(ordersController));

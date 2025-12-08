@@ -1,7 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 import { orderService } from "../services/order-service";
 import { StatusCode } from "../models/enums";
-import { Order } from "../models/types";
+import { CreateOrderDto, Order } from "../models/types";
+import { productClient } from "../clients/product-client";
 
 class OrdersController {
 
@@ -22,7 +23,7 @@ class OrdersController {
 
     public async addOrder(req: Request, res: Response, next: NextFunction) {
         try {
-            const orderPayload = req.body as Omit<Order, "_id" | "createdAt" | "updatedAt">;
+            const orderPayload = req.body as CreateOrderDto;
             const dbOrder = await orderService.addOrder(orderPayload);
             return res.status(StatusCode.Created).json(dbOrder);
         } catch (err) { next(err); }
@@ -46,7 +47,7 @@ class OrdersController {
             if (!_id) return res.status(StatusCode.BadRequest).json({ error: "missing order _id" });
 
             await orderService.deleteOrder(_id);
-            return res.status(StatusCode.OK).json({info: `deleted successfully`});
+            return res.status(StatusCode.OK).json({ info: `deleted successfully` });
 
         } catch (err) { next(err); }
     }
@@ -60,10 +61,21 @@ class OrdersController {
             const result = await orderService.getOrderWithUser(orderId, userId);
             return res.json(result);
         } catch (err) { next(err); }
-
-
-
     }
+
+    public async getProductById(req: Request, res: Response, next: NextFunction) {
+        try {
+            const _id = req.params._id;
+            if (!_id) return res.status(StatusCode.BadRequest).json({ error: "missing product _id" });
+            const product = await orderService.getProductById(_id);
+            return product ? res.json(product) : res.status(StatusCode.NotFound).json({ error: `product not found` });
+
+        } catch (err) { next(err); }
+    }
+
+
+
 }
+
 
 export const ordersController = new OrdersController();
