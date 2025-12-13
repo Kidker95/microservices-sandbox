@@ -1,5 +1,6 @@
 import express, { Express, Request, Response } from "express";
 import { errorMiddleware } from "./middleware/error-middleware";
+import receiptRouter from "./routes/receipt-routes";
 import { env } from "./config/env";
 
 
@@ -22,7 +23,7 @@ export class App {
         this.server.get("/health", (req: Request, res: Response) => {
             res.json({ status: "ok", service: "receipt-service" });
         });
-        // this.server.use("/api/products", receiptRouter);
+        this.server.use("/api/receipts", receiptRouter);
     }
 
     private registerErrorHandling(): void {
