@@ -15,7 +15,7 @@ export type RemoteUser = {
     email: string;
     name: string;
     address: RemoteAddress;
-    
+
 };
 
 // Order-service item shape (mirrors OrderItem)
@@ -110,7 +110,7 @@ export type ReceiptResources = {
 
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- html-template.ts types =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
- export type ReceiptItemView = {
+export type ReceiptItemView = {
     name: string;
     quantity: number;
     price: string;
@@ -125,6 +125,7 @@ export type ReceiptView = {
     customerName: string;
     items: ReceiptItemView[];
     subtotal: string;
+    shipping: string;
     tax: string;
     total: string;
 };

@@ -2,6 +2,8 @@ import express, { Express, Request, Response } from "express";
 import { errorMiddleware } from "./middleware/error-middleware";
 import receiptRouter from "./routes/receipt-routes";
 import { env } from "./config/env";
+import { pdfBrowser } from "./utils/pdf-browser";
+
 
 
 export class App {
@@ -32,10 +34,21 @@ export class App {
     }
 
     public start() {
+        process.on("SIGINT", async () => {
+            await pdfBrowser.close();
+            process.exit(0);
+        });
+
+        process.on("SIGTERM", async () => {
+            await pdfBrowser.close();
+            process.exit(0);
+        });
+
         this.server.listen(env.port, () => {
             console.log(`Receipt service running on port ${env.port}`);
-        })
+        });
     }
+
 }
 
 export const app = new App();

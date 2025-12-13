@@ -4,11 +4,12 @@ import { userClient } from "../clients/user-client";
 import { productClient } from "../clients/product-client";
 import { htmlTemplate } from "../utils/html-template";
 import { chromium } from "playwright";
+import { pdfBrowser } from "../utils/pdf-browser";
 
 
 
 class ReceiptService {
-   
+
     // formaters:
 
     private formatDate(value: string | Date): string {
@@ -18,11 +19,22 @@ class ReceiptService {
     }
 
     private formatMoney(amount: number, currency: string): string {
-        // Minimal, predictable output (no Intl surprises)
-        const rounded = Math.round(amount * 100) / 100;
-        const symbol = currency === "ILS" ? "₪" : currency;
-        return `${symbol}${rounded.toFixed(2)}`;
+        const safeAmount = Number.isFinite(amount) ? amount : 0;
+    
+        try {
+            return new Intl.NumberFormat("he-IL", {
+                style: "currency",
+                currency,
+                currencyDisplay: "symbol",
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(safeAmount);
+        } catch {
+            const rounded = Math.round(safeAmount * 100) / 100;
+            return `${currency} ${rounded.toFixed(2)}`;
+        }
     }
+    
 
     // helpers:
 
@@ -46,6 +58,27 @@ class ReceiptService {
         const { order, user, products } = resources;
 
         const currency = order.items[0]?.currency || "ILS";
+
+        if (!order.items || order.items.length === 0) {
+            return {
+                order: {
+                    orderId: order._id,
+                    status: order.status,
+                    createdAtFormatted: new Date(order.createdAt).toISOString(),
+                    subtotal: order.subtotal,
+                    shippingCost: order.shippingCost,
+                    total: order.total,
+                    currency,
+                },
+                customer: {
+                    name: user ? user.name : order.shippingAddress.fullName,
+                    email: user ? user.email : "",
+                    address: order.shippingAddress,
+                },
+                items: []
+            };
+        }
+        
 
         return {
             order: {
@@ -103,13 +136,12 @@ class ReceiptService {
             customerName: receipt.customer.name,
             items,
             subtotal: this.formatMoney(receipt.order.subtotal, currency),
+            shipping: this.formatMoney(receipt.order.shippingCost, currency),
             tax: this.formatMoney(tax, currency),
             total: this.formatMoney(receipt.order.total, currency)
         };
+        
     }
-
-
-
 
     public async generateHtml(orderId: string): Promise<string> {
         const resources = await this.gatherResources(orderId);
@@ -122,19 +154,23 @@ class ReceiptService {
 
     public async generatePdf(orderId: string): Promise<Buffer> {
         const html = await this.generateHtml(orderId);
-        const browser = await chromium.launch();
+
+
+        const browser = await pdfBrowser.getBrowser();
         const page = await browser.newPage();
 
-        await page.setContent(html, { waitUntil: "load" });
+        try {
 
-        const pdfBuffer = await page.pdf({
-            format: "A4",
-            printBackground: true,
-            margin: { top: "20mm", right: "15mm", bottom: "20mm", left: "15mm" }
-        })
+            await page.setContent(html, { waitUntil: "load" });
 
-        await browser.close();
-        return Buffer.from(pdfBuffer);
+            const pdf = await page.pdf({
+                format: "A4",
+                printBackground: true,
+                margin: { top: "20mm", right: "15mm", bottom: "20mm", left: "15mm" }
+            })
+            return Buffer.from(pdf);
+        } finally { await page.close(); }
+
     }
 
 
