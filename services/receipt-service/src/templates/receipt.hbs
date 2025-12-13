@@ -1,0 +1,82 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Receipt {{receiptNumber}}</title>
+    <style>
+      {{{css}}}
+    </style>
+  </head>
+
+  <body>
+    <div class="wrap">
+      <header class="header">
+        <div>
+          <div class="title">Receipt</div>
+        </div>
+        <div class="right">
+          <div class="muted">{{date}}</div>
+        </div>
+      </header>
+
+      <section class="card">
+        <div class="row">
+          <div>
+            <div class="label">Customer</div>
+            <div class="value">{{customerName}}</div>
+          </div>
+          <div class="right">
+            <div class="label">Order ID</div>
+            <div class="value">{{orderId}}</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th class="right">Qty</th>
+              <th class="right">Price</th>
+              <th class="right">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each items}}
+              <tr>
+                <td>{{name}}</td>
+                <td class="right">{{quantity}}</td>
+                <td class="right">{{price}}</td>
+                <td class="right">{{lineTotal}}</td>
+              </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </section>
+
+      <section class="card totals">
+        <div class="row">
+          <div class="muted">Subtotal</div>
+          <div class="value">{{subtotal}}</div>
+        </div>
+        <div class="row">
+          <div class="muted">Shipping</div>
+          <div class="value">{{shipping}}</div>
+        </div>
+
+        <div class="row">
+          <div class="muted">Tax</div>
+          <div class="value">{{tax}}</div>
+        </div>
+        <div class="row grand">
+          <div>Total</div>
+          <div>{{total}}</div>
+        </div>
+      </section>
+
+      <footer class="footer muted">
+        Thanks 💛
+      </footer>
+    </div>
+  </body>
+</html>

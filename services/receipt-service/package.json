@@ -1,0 +1,29 @@
+{
+    "name": "receipt-service",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "build": "tsc",
+        "dev": "ts-node-dev --respawn --transpile-only src/app.ts",
+        "start": "node dist/index.js"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "type": "commonjs",
+    "dependencies": {
+        "dotenv": "^17.2.3",
+        "express": "^5.1.0",
+        "handlebars": "^4.7.8",
+        "mongoose": "^8.20.1",
+        "playwright": "^1.57.0"
+    },
+    "devDependencies": {
+        "@types/express": "^5.0.5",
+        "@types/node": "^24.10.1",
+        "nodemon": "^3.1.11",
+        "ts-node-dev": "^2.0.0",
+        "typescript": "^5.9.3"
+    }
+}

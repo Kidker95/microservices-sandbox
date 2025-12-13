@@ -1,0 +1,103 @@
+:root {
+    color-scheme: light;
+}
+
+body {
+    margin: 0;
+    background: #f6f7fb;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.wrap {
+    max-width: 860px;
+    margin: 40px auto;
+    padding: 0 16px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.title {
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.card {
+    background: #fff;
+    border: 1px solid #e7e8ee;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+}
+
+.row {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.right {
+    text-align: right;
+}
+
+.label {
+    font-size: 12px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: #6b7280;
+    margin-bottom: 6px;
+}
+
+.value {
+    font-size: 14px;
+    color: #111827;
+}
+
+.muted {
+    color: #6b7280;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th,
+.table td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #eef0f6;
+    font-size: 14px;
+}
+
+.table th {
+    text-align: left;
+    font-size: 12px;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+.table .right {
+    text-align: right;
+}
+
+.totals .row {
+    padding: 6px 0;
+}
+
+.totals .grand {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 2px solid #111827;
+    font-weight: 700;
+    font-size: 18px;
+}
+
+.footer {
+    text-align: center;
+    padding: 18px 0;
+}
