@@ -35,7 +35,13 @@ class ProductClient {
     // this is for single product
     public async getProductById(productId: string): Promise<RemoteProduct> {
         this.validateId(productId);
-        const response = await fetch(`${this.productServiceBaseUrl}/products/${productId}`);
+        let response: any;
+        try {
+            response = await fetch(`${this.productServiceBaseUrl}/products/${productId}`);
+
+        } catch {
+            throw new BadRequestError(`product-service is unreachable`);
+        }
         return this.handleResponse(response, productId);
     }
 
@@ -47,7 +53,14 @@ class ProductClient {
             try {
                 const product = await this.getProductById(id);
                 results.push(product);
-            } catch (err) { console.warn(`Skipping missing product: ${id}`); }
+            } catch (err) {
+                if (err instanceof NotFoundError) {
+                    console.warn(`Skipping missing product: ${id}`);
+                    continue;
+                }
+                throw err;
+
+            }
         }
         return results;
     }

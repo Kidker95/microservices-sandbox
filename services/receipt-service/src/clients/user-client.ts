@@ -2,8 +2,9 @@ import mongoose from "mongoose";
 import { BadRequestError, NotFoundError } from "../models/errors";
 import { env } from "../config/env";
 import { RemoteUser } from "../models/types";
+import { StatusCode } from "../models/enums";
 
-class UserClient{
+class UserClient {
     private baseUrl = env.userServiceBaseUrl;
 
     private validateId(_id: string): void {
@@ -17,7 +18,7 @@ class UserClient{
 
         try { data = await response.json(); } catch { data = null; }
 
-        if (response.status === 404) {
+        if (response.status === StatusCode.NotFound) {
             const message = data?.error || `user with _id ${_id} not found`;
             throw new NotFoundError(message);
         }
@@ -30,11 +31,15 @@ class UserClient{
         return data as RemoteUser;
     }
 
-    public async getUserById(userId:string): Promise<RemoteUser>{
+    public async getUserById(userId: string): Promise<RemoteUser> {
         this.validateId(userId);
-
-        const response = await fetch(`${this.baseUrl}/users/${userId}`);
-        return this.handleResponse(response,userId);
+        let response: any;
+        try {
+            response = await fetch(`${this.baseUrl}/users/${userId}`);
+        } catch {
+            throw new BadRequestError(`user-service is unreachable`);
+        }
+        return this.handleResponse(response, userId);
     }
 
 }

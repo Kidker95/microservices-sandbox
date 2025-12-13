@@ -30,11 +30,16 @@ class OrderClient {
         const isValid = mongoose.isValidObjectId(_id);
         if (!isValid) throw new BadRequestError(`_id ${_id} is invalid`);
     }
-    
-    public async getOrderById(orderId:string): Promise<RemoteOrder>{
+
+    public async getOrderById(orderId: string): Promise<RemoteOrder> {
         this.validateId(orderId);
-        const response = await fetch(`${this.orderServiceBaseUrl}/orders/${orderId}`);
-        return this.handleResponse(response,orderId);
+        let response: any;
+        try {
+            response = await fetch(`${this.orderServiceBaseUrl}/orders/${orderId}`);
+        } catch {
+            throw new BadRequestError(`order-service is unreachable`);
+        }
+        return this.handleResponse(response, orderId);
     }
 
 }

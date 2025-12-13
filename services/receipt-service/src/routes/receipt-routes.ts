@@ -2,38 +2,34 @@ import { Request, Response, Router } from "express";
 import { BadRequestError, NotFoundError } from "../models/errors";
 import { receiptService } from "../services/receipt-service";
 import { StatusCode } from "../models/enums";
+import { asyncHandler } from "../utils/async-handler";
 
 
 const router = Router();
 
 
 
-router.get("/:orderId/html", async (req: Request, res: Response, next) => {
-    try {
-        const orderId = req.params.orderId;
-        if (!orderId) throw new BadRequestError(`orderId not provided`);
+router.get("/:orderId/html", asyncHandler(async (req: Request, res: Response) => {
+    const orderId = req.params.orderId;
+    if (!orderId) throw new BadRequestError("orderId not provided");
+    const html = await receiptService.generateHtml(orderId);
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
 
-        res.setHeader("Content-Type", "text/html; charset=utf-8");
+    return res.send(html);
+}));
 
-        const html = await receiptService.generateHtml(orderId);
+router.get("/:orderId/pdf", asyncHandler(async (req: Request, res: Response) => {
+    const orderId = req.params.orderId;
+    if (!orderId) throw new BadRequestError("orderId not provided");
 
-        return res.send(html);
-    } catch (err) { return next(err); }
-});
+    const pdf = await receiptService.generatePdf(orderId);
 
-router.get("/:orderId/pdf", async (req: Request, res: Response, next) => {
-    try {
-        const orderId = req.params.orderId;
-        if (!orderId) throw new BadRequestError(`orderId not provided`);
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `inline; filename="receipt-${orderId}.pdf"`);
 
-        const pdf = await receiptService.generatePdf(orderId);
+    return res.status(StatusCode.OK).send(pdf);
+}));
 
-        res.setHeader("Content-Type", "application/pdf");
-        res.setHeader("Content-Disposition", `inline; filename="receipt-${orderId}.pdf"`);
-
-        return res.status(StatusCode.OK).send(pdf);
-    } catch (err) { return next(err); }
-});
 
 
 
