@@ -20,7 +20,7 @@ export class App {
 
     private registerRoutes(): void {
         this.server.get("/health", (req: Request, res: Response) => {
-            res.json({ status: "ok", service: "product-service" });
+            res.json({ status: "ok", service: "product-service", uptimeSeconds: Math.floor(process.uptime()) });
         });
         this.server.use("/api/products", productRouter);
     }

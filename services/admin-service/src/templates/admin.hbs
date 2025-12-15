@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="refresh" content="5" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Panel</title>
+  <style>{{{css}}}</style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>Admin Panel</h1>
+      <div class="meta">
+        <div><strong>Generated:</strong> {{formatTime generatedAt}}</div>
+        <div class="summary">
+          <span class="pill">Total: {{summary.total}}</span>
+          <span class="pill pill-up">Up: {{summary.up}}</span>
+          <span class="pill pill-down">Down: {{summary.down}}</span>
+        </div>
+      </div>
+    </header>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Service</th>
+          <th>Status</th>
+          <th>Status Code</th>
+          <th>Response (ms)</th>
+          <th>Uptime</th>
+          <th>Checked</th>
+          <th>Error</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each services}}
+          <tr>
+            <td class="mono">{{name}}</td>
+            <td>
+              {{#if ok}}
+                <span class="badge badge-up">UP</span>
+              {{else}}
+                <span class="badge badge-down">DOWN</span>
+              {{/if}}
+            </td>
+            <td class="mono">{{statusCode}}</td>
+            <td class="mono"><span class="rt {{rtClass responseTimeMs}}">{{responseTimeMs}}</span></td>
+            <td class="mono">{{formatDuration uptimeSeconds}}</td>
+            <td class="mono">{{formatTime checkedAt}}</td>
+            <td class="error">{{error}}</td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+
+    <footer class="footer">
+      Auto-refresh every 5 seconds.
+    </footer>
+  </div>
+</body>
+</html>

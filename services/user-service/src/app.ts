@@ -23,7 +23,7 @@ export class App {
 
     private registerRoutes(): void {
         this.server.get("/health", (req: Request, res: Response) => {
-            res.json({ status: "ok", service: "user-service" });
+            res.json({ status: "ok", service: "user-service", uptimeSeconds: Math.floor(process.uptime()) });
         });
         this.server.use("/api/auth", authRouter);
         this.server.use("/api/users", usersRouter);
