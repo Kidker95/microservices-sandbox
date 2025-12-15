@@ -4,6 +4,7 @@
     "description": "",
     "main": "index.js",
     "scripts": {
+        "seed": "ts-node --project tsconfig.json scripts/seed.ts",
         "dev:users": "npm --prefix services/user-service run dev",
         "dev:orders": "npm --prefix services/order-service run dev",
         "dev:products": "npm --prefix services/product-service run dev",
@@ -23,6 +24,8 @@
     },
     "homepage": "https://github.com/Kidker95/microservices-sandbox#readme",
     "devDependencies": {
-        "concurrently": "^9.2.1"
+        "concurrently": "^9.2.1",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.9.3"
     }
 }

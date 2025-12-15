@@ -26,3 +26,4 @@ productRouter.patch("/:_id/active",productController.adjustActive.bind(productCo
 // DELETE
 
 productRouter.delete("/:_id",productController.deleteProduct.bind(productController));
+productRouter.delete("/",productController.deleteAll.bind(productController));

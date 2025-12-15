@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { userService } from "../services/user-service";
 import { StatusCode } from "../models/enums";
 import express from 'express'
+import { UserModel } from "../models/user-model";
 
 
 class UserController {
@@ -50,6 +51,13 @@ class UserController {
             return res.status(StatusCode.NoContent).json({ info: `Deleted successfully` })
         } catch (err) { next(err); }
 
+    }
+
+    public async deleteAll(req: Request, res: Response, next: NextFunction) {
+        try {
+            const deleteCount = await userService.deleteAll();
+            return res.status(StatusCode.OK).json({deleted: deleteCount})
+        } catch (err) { next(err); }
     }
 
 }

@@ -20,3 +20,4 @@ ordersRouter.put("/:_id", ordersController.updateOrder.bind(ordersController));
 // DELETE
 
 ordersRouter.delete("/:_id", ordersController.deleteOrder.bind(ordersController));
+ordersRouter.delete("/",ordersController.deleteAll.bind(ordersController));

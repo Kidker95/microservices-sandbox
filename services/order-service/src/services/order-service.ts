@@ -101,6 +101,12 @@ class OrderService {
 
     }
 
+    public async deleteAll(): Promise<number> {
+        const result = await OrderModel.deleteMany({});
+        return result.deletedCount ?? 0;
+    }
+    
+
     // talk to user-service
 
     public async getOrderWithUser(orderId: string, userId: string): Promise<{ order: OrderDocument; user: RemoteUser }> {
