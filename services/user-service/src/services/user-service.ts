@@ -52,6 +52,11 @@ class UserService {
         if (!deleted) throw new NotFoundError(`User with id ${_id} not found`);
     }
 
+    public async deleteAll(): Promise<number> {
+        const result = await UserModel.deleteMany({});
+        return result.deletedCount ?? 0;
+    }
+
 
 }
 

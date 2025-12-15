@@ -18,3 +18,4 @@ usersRouter.put("/:_id", userController.updateUser.bind(userController));
 
 // DELETE
 usersRouter.delete("/:_id", userController.deleteUser.bind(userController));
+usersRouter.delete("/", userController.deleteAll.bind(userController));

@@ -52,6 +52,13 @@ class OrdersController {
         } catch (err) { next(err); }
     }
 
+    public async deleteAll(req: Request, res: Response, next: NextFunction) {
+        try {
+            const deletedCount = await orderService.deleteAll();
+            return res.status(StatusCode.OK).json({deleted: deletedCount});
+        } catch (err) { next(err); }
+    }
+
     public async getOrderWithUser(req: Request, res: Response, next: NextFunction) {
         try {
             const { orderId, userId } = req.params;

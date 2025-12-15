@@ -48,6 +48,14 @@ class ProductController {
         } catch (err) { next(err); }
     }
 
+    public async deleteAll(req: Request, res: Response, next: NextFunction) {
+        try {
+            const deletedCount = await productService.deleteAll();
+            return res.status(StatusCode.OK).json({ deleted: deletedCount });
+
+        } catch (err) { next(err); }
+    }
+
     public async adjustStock(req: Request, res: Response, next: NextFunction) {
         try {
             const _id = req.params._id;
@@ -55,7 +63,7 @@ class ProductController {
 
             const { delta } = req.body;
             if (typeof delta !== "number") return res.status(StatusCode.BadRequest).json({ error: "missing or invalid delta" });
-            
+
 
             return res.json(await productService.adjustStock(_id, delta));
 
@@ -67,11 +75,11 @@ class ProductController {
             const _id = req.params._id;
             if (!_id) return res.status(StatusCode.BadRequest).json({ error: "missing product _id" });
             return res.json(await productService.adjustIsActive(_id));
-    
+
         } catch (err) { next(err); }
     }
-    
-    
+
+
 
 }
 export const productController = new ProductController();

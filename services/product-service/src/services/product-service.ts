@@ -51,6 +51,11 @@ class ProductService {
 
     }
 
+    public async deleteAll(): Promise<number> {
+        const result = await ProductModel.deleteMany({});
+        return result.deletedCount ?? 0;
+    }
+
     public async adjustStock(_id: string, delta: number): Promise<ProductDocument> {
         this.validateId(_id);
     
