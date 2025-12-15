@@ -1,0 +1,17 @@
+import dotenv from "dotenv";
+dotenv.config({ quiet: true });
+
+class Env {
+    public readonly port: number = Number(process.env.PORT) || 4005;
+    public readonly environment: string = process.env.NODE_ENV || "development";
+
+    public readonly userServiceBaseUrl: string = process.env.USER_SERVICE_BASE_URL || "http://localhost:4001";
+    public readonly orderServiceBaseUrl: string = process.env.ORDER_SERVICE_BASE_URL || "http://localhost:4002";
+    public readonly productServiceBaseUrl: string = process.env.PRODUCT_SERVICE_BASE_URL || "http://localhost:4003";
+    public readonly receiptServiceBaseUrl: string = process.env.RECEIPT_SERVICE_BASE_URL || "http://localhost:4004";
+
+
+
+}
+
+export const env = new Env();

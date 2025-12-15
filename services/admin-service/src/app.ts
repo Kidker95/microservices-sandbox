@@ -1,11 +1,10 @@
 import express, { Express, Request, Response } from "express";
 import { env } from "./config/env";
-import { ordersRouter } from "./routes/orders-routes";
 import { errorMiddleware } from "./middleware/error-middleware";
-import { dal } from "./dal";
+import adminRouter from "./routes/admin-routes"
 
 
-export class App {
+export class App{
     public readonly server: Express;
 
     constructor() {
@@ -13,19 +12,17 @@ export class App {
         this.registerInfra();
         this.registerRoutes();
         this.registerErrorHandling();
-    }
 
+    }
     private registerInfra(): void {
         this.server.use(express.json());
     }
 
     private registerRoutes(): void {
         this.server.get("/health", (req: Request, res: Response) => {
-            res.json({ status: "ok", service: "order-service", uptimeSeconds: Math.floor(process.uptime()) });
+            res.json({ status: "ok", service: "admin-service" });
         });
-        this.server.use("/api/orders", ordersRouter);
-
-
+        this.server.use("/api/admin", adminRouter);
     }
 
     private registerErrorHandling(): void {
@@ -34,17 +31,14 @@ export class App {
     }
 
     public start() {
+        
         this.server.listen(env.port, () => {
-            console.log(`Order Service running on port ${env.port}`);
-        })
+            console.log(`Admin service running on port ${env.port}`);
+        });
     }
 }
 
-async function bootstrap(): Promise<void>{
-    await dal.connect();
-    app.start();
-}
-
-
 export const app = new App();
+
+const bootstrap = async (): Promise<void> => app.start();
 bootstrap();
