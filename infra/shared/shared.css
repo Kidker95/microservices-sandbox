@@ -1,0 +1,42 @@
+:root{
+    --font-sans: Arial, Helvetica, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  
+    --radius: 12px;
+    --pad: 16px;
+    --gap: 16px;
+  
+    --accent: #f4c430; /* warm yellow */
+    --ok: #2ecc71;
+    --warn: #f1c40f;
+    --bad: #e74c3c;
+  
+    --text: #111827;
+    --muted: #6b7280;
+  }
+  
+  body{
+    margin: 0;
+    font-family: var(--font-sans);
+  }
+  
+  .muted{ color: var(--muted); }
+  
+  .mono{
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+  
+  .card{
+    border-radius: var(--radius);
+    padding: var(--pad);
+  }
+  
+  .row{
+    display: flex;
+    justify-content: space-between;
+    gap: var(--gap);
+  }
+  
+  .right{ text-align: right; }
+  

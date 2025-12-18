@@ -14,4 +14,5 @@ export enum ServiceName {
     OrderService =  "order-service",
     ProductService =  "product-service",
     ReceiptService =  "receipt-service",
+    FortuneService =  "fortune-service",
 }
