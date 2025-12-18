@@ -105,6 +105,7 @@ export type ReceiptResources = {
     order: RemoteOrder;
     user: RemoteUser | null;
     products: RemoteProduct[];
+    fortune?: Fortune
 };
 
 
@@ -128,4 +129,16 @@ export type ReceiptView = {
     shipping: string;
     tax: string;
     total: string;
+    fortuneText?: string;
+    fortuneAuthor?: string;
+};
+
+
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- fortune-client.ts types =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+export type Fortune = {
+    fortune: string;
+    author: string;
+    source: string;
+    fetchedAt: string;
 };

@@ -9,6 +9,7 @@ class Env {
     public readonly orderServiceBaseUrl: string = process.env.ORDER_SERVICE_BASE_URL || "http://localhost:4002";
     public readonly productServiceBaseUrl: string = process.env.PRODUCT_SERVICE_BASE_URL || "http://localhost:4003";
     public readonly receiptServiceBaseUrl: string = process.env.RECEIPT_SERVICE_BASE_URL || "http://localhost:4004";
+    public readonly fortuneServiceBaseUrl: string = process.env.FORTUNE_SERVICE_BASE_URL || "http://localhost:4006";
 
 
 

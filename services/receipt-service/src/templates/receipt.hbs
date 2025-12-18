@@ -74,6 +74,15 @@
         </div>
       </section>
 
+      {{#if fortuneText}}
+        <section class="card fortune">
+          <div class="fortune-text">“{{fortuneText}}”</div>
+          {{#if fortuneAuthor}}
+            <div class="fortune-author muted">— {{fortuneAuthor}}</div>
+          {{/if}}
+        </section>
+      {{/if}}
+
       <footer class="footer muted">
         Thanks 💛
       </footer>

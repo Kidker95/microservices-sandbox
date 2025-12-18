@@ -11,6 +11,7 @@ class HealthClient {
         { name: ServiceName.OrderService, baseUrl: env.orderServiceBaseUrl },
         { name: ServiceName.ProductService, baseUrl: env.productServiceBaseUrl },
         { name: ServiceName.ReceiptService, baseUrl: env.receiptServiceBaseUrl },
+        { name: ServiceName.FortuneService, baseUrl: env.fortuneServiceBaseUrl },
     ];
 
     private async checkOne(service: BasicService): Promise<ServiceStatus> {

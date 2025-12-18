@@ -1,10 +1,11 @@
-import { ReceiptResources, ReceiptData, ReceiptView } from "../models/types";
+import { Fortune, ReceiptResources, ReceiptData, ReceiptView } from "../models/types";
 import { orderClient } from "../clients/order-client";
 import { userClient } from "../clients/user-client";
 import { productClient } from "../clients/product-client";
 import { htmlTemplate } from "../utils/html-template";
 import { chromium } from "playwright";
 import { pdfBrowser } from "../utils/pdf-browser";
+import { fortuneClient } from "../clients/fortune-client";
 
 
 
@@ -20,7 +21,7 @@ class ReceiptService {
 
     private formatMoney(amount: number, currency: string): string {
         const safeAmount = Number.isFinite(amount) ? amount : 0;
-    
+
         try {
             return new Intl.NumberFormat("he-IL", {
                 style: "currency",
@@ -34,25 +35,30 @@ class ReceiptService {
             return `${currency} ${rounded.toFixed(2)}`;
         }
     }
-    
+
 
     // helpers:
 
     private async gatherResources(orderId: string): Promise<ReceiptResources> {
-        // 1. Get the order (this will validate the id + throw if not found)
         const order = await orderClient.getOrderById(orderId);
 
-        // 2. In parallel: load user + products
         const userPromise = userClient.getUserById(order.userId);
 
         const productIds = [...new Set(order.items.map(item => item.productId))];
         const productsPromise = productClient.getProductsByIdArr(productIds);
 
-        const [user, products] = await Promise.all([userPromise, productsPromise]);
+        const fortunePromise = fortuneClient.getFortune(); // returns Fortune[]
 
-        // 3. Return full resource bundle
-        return { order, user, products };
+        const [user, products, fortunes] = await Promise.all([userPromise, productsPromise, fortunePromise]);
+
+        const resources: ReceiptResources = { order, user, products };
+
+        const firstFortune = fortunes[0];
+        if (firstFortune) resources.fortune = firstFortune;
+
+        return resources;
     }
+
 
     private mapToReceiptData(resources: ReceiptResources): ReceiptData {
         const { order, user, products } = resources;
@@ -78,7 +84,7 @@ class ReceiptService {
                 items: []
             };
         }
-        
+
 
         return {
             order: {
@@ -117,19 +123,19 @@ class ReceiptService {
         };
     }
 
-    private mapToReceiptView(receipt: ReceiptData): Omit<ReceiptView, "css"> {
+    private mapToReceiptView(receipt: ReceiptData, fortune?: Fortune): Omit<ReceiptView, "css"> {
         const currency = receipt.order.currency || "ILS";
-
+    
         const items = receipt.items.map(item => ({
             name: item.name,
             quantity: item.quantity,
             price: this.formatMoney(item.unitPrice, currency),
             lineTotal: this.formatMoney(item.lineTotal, currency)
         }));
-
+    
         const tax = 0;
-
-        return {
+    
+        const view: Omit<ReceiptView, "css"> = {
             receiptNumber: receipt.order.orderId,
             date: this.formatDate(receipt.order.createdAtFormatted),
             orderId: receipt.order.orderId,
@@ -140,14 +146,21 @@ class ReceiptService {
             tax: this.formatMoney(tax, currency),
             total: this.formatMoney(receipt.order.total, currency)
         };
-        
+    
+        if (fortune) {
+            view.fortuneText = fortune.fortune;
+            view.fortuneAuthor = fortune.author;
+        }
+    
+        return view;
     }
+    
 
     public async generateHtml(orderId: string): Promise<string> {
         const resources = await this.gatherResources(orderId);
         const receipt = this.mapToReceiptData(resources);
 
-        const view = this.mapToReceiptView(receipt);
+        const view = this.mapToReceiptView(receipt,resources.fortune);
 
         return htmlTemplate.renderReceiptHtml(view);
     }

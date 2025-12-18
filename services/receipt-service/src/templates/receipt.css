@@ -3,9 +3,7 @@
 }
 
 body {
-    margin: 0;
     background: #f6f7fb;
-    font-family: Arial, Helvetica, sans-serif;
 }
 
 .wrap {
@@ -29,36 +27,19 @@ body {
 .card {
     background: #fff;
     border: 1px solid #e7e8ee;
-    border-radius: 12px;
-    padding: 16px;
     margin-bottom: 12px;
-}
-
-.row {
-    display: flex;
-    justify-content: space-between;
-    gap: 16px;
-}
-
-.right {
-    text-align: right;
 }
 
 .label {
     font-size: 12px;
     letter-spacing: .04em;
     text-transform: uppercase;
-    color: #6b7280;
     margin-bottom: 6px;
 }
 
 .value {
     font-size: 14px;
-    color: #111827;
-}
-
-.muted {
-    color: #6b7280;
+    color: var(--text);
 }
 
 .table {
@@ -76,7 +57,6 @@ body {
 .table th {
     text-align: left;
     font-size: 12px;
-    color: #6b7280;
     text-transform: uppercase;
     letter-spacing: .04em;
 }
@@ -92,9 +72,25 @@ body {
 .totals .grand {
     margin-top: 10px;
     padding-top: 10px;
-    border-top: 2px solid #111827;
+    border-top: 2px solid var(--text);
     font-weight: 700;
     font-size: 18px;
+}
+
+.fortune {
+    text-align: center;
+}
+
+.fortune-text {
+    font-size: 14px;
+    font-style: italic;
+    color: var(--text);
+    line-height: 1.5;
+}
+
+.fortune-author {
+    margin-top: 8px;
+    font-size: 12px;
 }
 
 .footer {

@@ -3,8 +3,6 @@
 }
 
 body {
-    margin: 0;
-    font-family: Arial, sans-serif;
     background: #0f1115;
     color: #e8e8e8;
 }
@@ -79,11 +77,6 @@ th {
     opacity: 0.9;
 }
 
-.mono {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    font-size: 12px;
-}
-
 .badge {
     display: inline-block;
     padding: 4px 10px;
@@ -122,8 +115,6 @@ th {
     font-weight: 500;
 }
 
-
-
 .rt-fast {
     background: rgba(46, 204, 113, 0.16);
     border: 1px solid rgba(46, 204, 113, 0.22);
@@ -138,7 +129,6 @@ th {
     background: rgba(231, 76, 60, 0.16);
     border: 1px solid rgba(231, 76, 60, 0.22);
 }
-
 
 .rt-unknown {
     background: rgba(255, 255, 255, 0.06);
