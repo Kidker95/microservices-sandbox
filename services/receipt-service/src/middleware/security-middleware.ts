@@ -31,15 +31,15 @@ class SecurityMiddleware {
         } catch (err) { next(err); }
     }
 
-    public verifyOwnerOrAdmin(getOwnerId: (req: Request) => string) {
-        return (req: Request, _res: Response, next: NextFunction) => {
+    public verifyOwnerOrAdmin(getOwnerId: (req: Request) => string | Promise<string>) {
+        return async (req: Request, _res: Response, next: NextFunction) => {
             try {
                 const user = (req as any).user;
 
                 if (!user) throw new UnauthorizedError("Not logged in");
                 if (user.role === UserRole.Admin) return next();
 
-                const ownerId = getOwnerId(req);
+                const ownerId = await Promise.resolve(getOwnerId(req));
                 if (!ownerId) throw new ForbiddenError("Forbidden");
 
                 if (user.userId !== ownerId) throw new ForbiddenError("Forbidden");

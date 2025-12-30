@@ -6,7 +6,7 @@ class Env {
     public readonly environment: string = process.env.NODE_ENV || "development";
     public readonly userServiceBaseUrl: string = process.env.USER_SERVICE_URL || "http://localhost:4001/api";
     public readonly productServiceBaseUrl: string = process.env.PRODUCT_SERVICE_URL || "http://localhost:4003/api";
-    public readonly authServiceBaseUrl: string = process.env.AUTH_SERVICE_BASE_URL || "http://localhost:4007/api"
+    public readonly authServiceBaseUrl: string = process.env.AUTH_SERVICE_BASE_URL || "http://localhost:4007"
 
     public readonly mongoConnectionString: string;
 

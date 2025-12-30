@@ -3,7 +3,6 @@ import { usersRouter } from "./routes/users-routes";
 import { env } from "./config/env";
 import { errorMiddleware } from "./middleware/error-middleware";
 import { dal } from "./dal";
-import { authRouter } from "./routes/auth-routes";
 
 
 export class App {
@@ -25,7 +24,6 @@ export class App {
         this.server.get("/health", (req: Request, res: Response) => {
             res.json({ status: "ok", service: "user-service", uptimeSeconds: Math.floor(process.uptime()) });
         });
-        this.server.use("/api/auth", authRouter);
         this.server.use("/api/users", usersRouter);
     }
 

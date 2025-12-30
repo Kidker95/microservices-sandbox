@@ -1,4 +1,4 @@
-import { ServiceName } from "./enums";
+import { ServiceName, UserRole } from "./enums";
 
 export type BasicService = {
     name: ServiceName;
@@ -25,3 +25,8 @@ export interface DashboardViewModel {
         down: number;
     };
 }
+
+export type AuthContext = {
+    userId: string;
+    role: UserRole;
+};

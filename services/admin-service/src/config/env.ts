@@ -11,9 +11,6 @@ class Env {
     public readonly receiptServiceBaseUrl: string = process.env.RECEIPT_SERVICE_BASE_URL || "http://localhost:4004";
     public readonly fortuneServiceBaseUrl: string = process.env.FORTUNE_SERVICE_BASE_URL || "http://localhost:4006";
     public readonly authServiceBaseUrl: string = process.env.AUTH_SERVICE_BASE_URL || "http://localhost:4007/api"
-
-
-
 }
 
 export const env = new Env();
