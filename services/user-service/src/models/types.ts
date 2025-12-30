@@ -14,7 +14,6 @@ export type Address = {
 export type User = {
     _id: string;
     email: string;
-    passwordHash: string;
     name: string;
     role: UserRole;
     address: Address;

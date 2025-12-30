@@ -14,7 +14,6 @@ const AddressSchema = new Schema<Address>({
 
 const UserSchema = new Schema<UserDocument>({
     email: { type: String, required: true, unique: true, trim: true },
-    passwordHash: { type: String, required: true },
     name: { type: String, required: true, trim: true },
     role: { type: String, enum: Object.values(UserRole), default: UserRole.User },
     address: { type: AddressSchema, required: true }

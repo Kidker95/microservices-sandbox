@@ -6,6 +6,10 @@ import { htmlTemplate } from "../utils/html-template";
 import { chromium } from "playwright";
 import { pdfBrowser } from "../utils/pdf-browser";
 import { fortuneClient } from "../clients/fortune-client";
+import { ForbiddenError } from "../models/errors";
+import { UserRole } from "../models/enums";
+import { AuthContext } from "../models/types";
+
 
 
 
@@ -39,25 +43,31 @@ class ReceiptService {
 
     // helpers:
 
-    private async gatherResources(orderId: string): Promise<ReceiptResources> {
+    private async gatherResources(orderId: string, requester: AuthContext): Promise<ReceiptResources> {
         const order = await orderClient.getOrderById(orderId);
-
+    
+        const isAdmin = requester.role === UserRole.Admin;
+        const isOwner = requester.userId === order.userId;
+    
+        if (!isAdmin && !isOwner) throw new ForbiddenError("Forbidden");
+    
         const userPromise = userClient.getUserById(order.userId);
-
+    
         const productIds = [...new Set(order.items.map(item => item.productId))];
         const productsPromise = productClient.getProductsByIdArr(productIds);
-
-        const fortunePromise = fortuneClient.getFortune(); // returns Fortune[]
-
+    
+        const fortunePromise = fortuneClient.getFortune();
+    
         const [user, products, fortunes] = await Promise.all([userPromise, productsPromise, fortunePromise]);
-
+    
         const resources: ReceiptResources = { order, user, products };
-
+    
         const firstFortune = fortunes[0];
         if (firstFortune) resources.fortune = firstFortune;
-
+    
         return resources;
     }
+    
 
 
     private mapToReceiptData(resources: ReceiptResources): ReceiptData {
@@ -156,35 +166,32 @@ class ReceiptService {
     }
     
 
-    public async generateHtml(orderId: string): Promise<string> {
-        const resources = await this.gatherResources(orderId);
+    public async generateHtml(orderId: string, requester: AuthContext): Promise<string> {
+        const resources = await this.gatherResources(orderId, requester);
         const receipt = this.mapToReceiptData(resources);
-
-        const view = this.mapToReceiptView(receipt,resources.fortune);
-
+        const view = this.mapToReceiptView(receipt, resources.fortune);
         return htmlTemplate.renderReceiptHtml(view);
     }
-
-    public async generatePdf(orderId: string): Promise<Buffer> {
-        const html = await this.generateHtml(orderId);
-
-
+    
+    public async generatePdf(orderId: string, requester: AuthContext): Promise<Buffer> {
+        const html = await this.generateHtml(orderId, requester);
+    
         const browser = await pdfBrowser.getBrowser();
         const page = await browser.newPage();
-
+    
         try {
-
             await page.setContent(html, { waitUntil: "load" });
-
+    
             const pdf = await page.pdf({
                 format: "A4",
                 printBackground: true,
                 margin: { top: "20mm", right: "15mm", bottom: "20mm", left: "15mm" }
-            })
+            });
+    
             return Buffer.from(pdf);
         } finally { await page.close(); }
-
     }
+    
 
 
 }

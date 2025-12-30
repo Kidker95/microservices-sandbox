@@ -60,6 +60,16 @@ class UserController {
         } catch (err) { next(err); }
     }
 
+    public async getUserByEmail(req: Request, res: Response, next: NextFunction) {
+        try {
+            const email = req.params.email;
+            if(!email) return res.status(StatusCode.BadRequest).json({error: "Missing email"});
+            const user = await userService.getUserByEmail(email);
+            if(!user) return res.status(StatusCode.NotFound).json({error: `User with email ${email} not found`});
+            return res.status(StatusCode.OK).json(user);
+        } catch (err) { next(err); }
+    }
+
 }
 
 export const userController = new UserController();

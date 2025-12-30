@@ -7,6 +7,7 @@ export const usersRouter = express.Router();
 
 usersRouter.get("/", userController.getAllUsers.bind(userController));
 usersRouter.get("/:_id", userController.getUserById.bind(userController));
+usersRouter.get("/by-email/:email",userController.getUserByEmail.bind(userController));
 
 
 // POST

@@ -10,6 +10,7 @@ class Env {
    public readonly orderServiceBaseUrl: string = process.env.ORDER_SERVICE_BASE_URL || "http://localhost:4002/api"
    public readonly productServiceBaseUrl: string = process.env.PRODUCT_SERVICE_BASE_URL || "http://localhost:4003/api"
    public readonly fortuneServiceBaseUrl: string = process.env.FORTUNE_SERVICE_BASE_URL || "http://localhost:4006/api"
+   public readonly authServiceBaseUrl: string = process.env.AUTH_SERVICE_BASE_URL || "http://localhost:4007/api"
 }
 
 export const env = new Env();
