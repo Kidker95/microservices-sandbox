@@ -5,6 +5,8 @@ class Env {
     public readonly port: number = Number(process.env.PORT) || 4003;
     public readonly environment: string = process.env.NODE_ENV || "development";
     public readonly mongoConnectionString: string;
+    public readonly authServiceBaseUrl: string = process.env.AUTH_SERVICE_BASE_URL || "http://localhost:4007/api"
+
 
     public constructor() {
         const conn = process.env.MONGO_CONNECTION_STRING;

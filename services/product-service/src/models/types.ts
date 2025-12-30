@@ -1,4 +1,4 @@
-import { Currency, Size } from "./enums";
+import { Currency, Size, UserRole } from "./enums";
 
 export interface Product {
     _id: string;
@@ -14,3 +14,8 @@ export interface Product {
     createdAt: Date;
     updatedAt: Date;
 }
+
+export type AuthContext = {
+    userId: string;
+    role: UserRole;
+};

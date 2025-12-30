@@ -1,29 +1,53 @@
 import express from "express";
 import { productController } from "../controllers/product-controller";
+import { securityMiddleware } from "../middleware/security.middleware";
 
 
 export const productRouter = express.Router();
 
 // GET
 
+// all products
 productRouter.get("/",productController.getAllProducts.bind(productController));
+
+// specific product
 productRouter.get("/:_id",productController.getProductById.bind(productController));
 
 // POST
 
-productRouter.post("/",productController.addProduct.bind(productController));
+productRouter.post("/", // add product
+    securityMiddleware.verifyLoggedIn.bind(securityMiddleware),
+    securityMiddleware.verifyAdmin.bind(securityMiddleware),
+    productController.addProduct.bind(productController));
 
 // PUT
 
-productRouter.put("/:_id",productController.updateProduct.bind(productController));
+productRouter.put("/:_id", // update product
+    securityMiddleware.verifyLoggedIn.bind(securityMiddleware),
+    securityMiddleware.verifyAdmin.bind(securityMiddleware),
+    productController.updateProduct.bind(productController));
 
 // PATCH
 
-productRouter.patch("/:_id/stock",productController.adjustStock.bind(productController));
-productRouter.patch("/:_id/active",productController.adjustActive.bind(productController));
+productRouter.patch("/:_id/stock", // adjust stock
+    securityMiddleware.verifyLoggedIn.bind(securityMiddleware),
+    securityMiddleware.verifyAdmin.bind(securityMiddleware),
+    productController.adjustStock.bind(productController));
+
+productRouter.patch("/:_id/active", // toggle active/inactive
+    securityMiddleware.verifyLoggedIn.bind(securityMiddleware),
+    securityMiddleware.verifyAdmin.bind(securityMiddleware),
+    productController.adjustActive.bind(productController));
 
 
 // DELETE
 
-productRouter.delete("/:_id",productController.deleteProduct.bind(productController));
-productRouter.delete("/",productController.deleteAll.bind(productController));
+productRouter.delete("/:_id", // delete specific
+    securityMiddleware.verifyLoggedIn.bind(securityMiddleware),
+    securityMiddleware.verifyAdmin.bind(securityMiddleware),
+    productController.deleteProduct.bind(productController));
+
+productRouter.delete("/", //delete all
+    securityMiddleware.verifyLoggedIn.bind(securityMiddleware),
+    securityMiddleware.verifyAdmin.bind(securityMiddleware),
+    productController.deleteAll.bind(productController));
