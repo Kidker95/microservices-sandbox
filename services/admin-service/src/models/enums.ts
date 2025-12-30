@@ -16,3 +16,8 @@ export enum ServiceName {
     ReceiptService =  "receipt-service",
     FortuneService =  "fortune-service",
 }
+
+export enum UserRole {
+    User = "User",
+    Admin = "Admin"
+}
