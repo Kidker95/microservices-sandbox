@@ -25,29 +25,7 @@ export type User = {
 
 // =-=-=-=-=-=-=-=-= A  U  T  H =-=-=-=-=-=-=-=-=
 
-
-export type CredentialsModel = {
-    email: string;
-    password: string
-}
-
-export interface TokenUserPayload {
-    _id: string;
-    email: string;
-    name: string;
+export type AuthContext = {
+    userId: string;
     role: UserRole;
-}
-
-export interface DecodedToken {
-    user: TokenUserPayload;
-    iat: number;
-    exp: number;
-}
-
-export type RegisterUserPayload = {
-    email: string;
-    password: string;
-    name: string;
-    address: Address;
-    role?: UserRole; 
 };

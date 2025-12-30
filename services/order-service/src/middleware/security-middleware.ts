@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { UnauthorizedError, ForbiddenError } from "../models/errors";
-import { authClient } from "../clients/auth-client";
 import { UserRole } from "../models/enums";
+import { authClient } from "../clients/auth-client";
 
 class SecurityMiddleware {
 
