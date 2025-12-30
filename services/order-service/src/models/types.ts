@@ -1,4 +1,4 @@
-import { Currency, OrderStatus, Size } from "./enums";
+import { Currency, OrderStatus, Size, UserRole } from "./enums";
 
 export type Address = {
     fullName: string;
@@ -63,4 +63,9 @@ export type CreateOrderDto = {
     userId: string;
     items: CreateOrderItemDto[];
     shippingAddress: Address;
+};
+
+export type AuthContext = {
+    userId: string;
+    role: UserRole;
 };

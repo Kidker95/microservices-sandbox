@@ -28,3 +28,8 @@ export enum Size {
     Large = "Large",
     Extra_Large = "Extra Large"
 }
+
+export enum UserRole {
+    User = "User",
+    Admin = "Admin"
+}
