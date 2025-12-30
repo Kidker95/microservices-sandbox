@@ -17,7 +17,6 @@ usersRouter.get("/:_id", //get specific user
     userController.getUserById.bind(userController));
 
 usersRouter.get("/by-email/:email",
-    securityMiddleware.verifyLoggedIn.bind(securityMiddleware),
     userController.getUserByEmail.bind(userController));
 
 
