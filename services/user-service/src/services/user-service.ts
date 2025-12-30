@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { RegexOptions } from "mongoose";
 import { UserDocument, UserModel } from "../models/user-model";
 import { User } from "../models/types";
 import { BadRequestError, NotFoundError } from "../models/errors";
@@ -7,10 +7,14 @@ class UserService {
 
     private validateId(_id: string): void {
         const isValid = mongoose.isValidObjectId(_id);
-        if (!isValid) {
-            throw new BadRequestError(`_id ${_id} is invalid`);
-        }
+        if (!isValid) throw new BadRequestError(`_id ${_id} is invalid`);
     }
+
+    private isValidEmail(email: string): boolean {
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        return emailRegex.test(email);
+    }
+    
 
 
     public async getAllUsers(): Promise<UserDocument[]> { return await UserModel.find().exec(); }
@@ -22,7 +26,6 @@ class UserService {
         if (!user) throw new NotFoundError(`User with id ${_id} was not found`);
         return user;
     }
-
 
     public async addUser(user: Omit<User, "_id" | "createdAt" | "updatedAt">): Promise<UserDocument> {
         const userDoc = new UserModel(user);  // creating new mongo doc
@@ -56,6 +59,20 @@ class UserService {
         const result = await UserModel.deleteMany({});
         return result.deletedCount ?? 0;
     }
+
+    public async getUserByEmail(email: string): Promise<UserDocument> {
+        const normalizedEmail = email.trim().toLowerCase();
+    
+        const isValid = this.isValidEmail(normalizedEmail);
+        if (!isValid) throw new BadRequestError(`${normalizedEmail} is not a valid email address`);
+    
+        const user = await UserModel.findOne({ email: normalizedEmail });
+    
+        if (!user) throw new NotFoundError(`User with email ${normalizedEmail} not found`);
+    
+        return user;
+    }
+    
 
 
 }

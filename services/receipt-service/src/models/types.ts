@@ -1,3 +1,4 @@
+import { UserRole } from "./enums";
 
 
 // User-service address shape (duplicated locally on purpose)
@@ -141,4 +142,11 @@ export type Fortune = {
     author: string;
     source: string;
     fetchedAt: string;
+};
+
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- auth-client.ts types =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+export type AuthContext = {
+    userId: string;
+    role: UserRole;
 };

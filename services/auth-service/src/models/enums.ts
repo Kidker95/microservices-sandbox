@@ -1,3 +1,8 @@
+export enum UserRole {
+    User = "User",
+    Admin = "Admin"
+}
+
 export enum StatusCode {
     OK = 200,
     Created = 201,
@@ -7,9 +12,4 @@ export enum StatusCode {
     Forbidden = 403,
     NotFound = 404,
     InternalServerError = 500
-}
-
-export enum UserRole {
-    User = "User",
-    Admin = "Admin"
 }
