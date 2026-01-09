@@ -14,7 +14,7 @@
         "dev:auth": "npm --prefix services/auth-service run dev",
         "dev:all": "concurrently -n \"user-service,order-service,product-service,receipt-service,admin-service,fortune-service,auth-service\" -c \"green,magenta,yellow,blue,cyan,yellowBright,white\" \"npm run dev:users\" \"npm run dev:orders\" \"npm run dev:products\" \"npm run dev:receipts\" \"npm run dev:admin\" \"npm run dev:fortune\" \"npm run dev:auth\"",
 
-
+        
         "nginx:on": "powershell -ExecutionPolicy Bypass -File scripts/nginx/nginx-start.ps1", 
         "nginx:off": "powershell -ExecutionPolicy Bypass -File scripts/nginx/nginx-stop.ps1",
         "nginx:reload": "powershell -ExecutionPolicy Bypass -File scripts/nginx/nginx-reload.ps1"
