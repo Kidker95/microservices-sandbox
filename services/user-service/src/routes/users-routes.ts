@@ -11,10 +11,13 @@ usersRouter.get("/", // get all users
     securityMiddleware.verifyAdmin.bind(securityMiddleware),
     userController.getAllUsers.bind(userController));
 
-usersRouter.get("/:_id", //get specific user
-    securityMiddleware.verifyLoggedIn.bind(securityMiddleware),
-    securityMiddleware.verifyOwnerOrAdmin.bind(securityMiddleware),
-    userController.getUserById.bind(userController));
+    usersRouter.get("/:_id",
+        (req: any, _res: any, next: any) => { console.log("USER route hit /users/:_id"); next(); },
+        securityMiddleware.verifyLoggedIn.bind(securityMiddleware),
+        securityMiddleware.verifyOwnerOrAdmin((req) => req.params._id!),
+        userController.getUserById.bind(userController));
+    
+
 
 usersRouter.get("/by-email/:email",
     userController.getUserByEmail.bind(userController));

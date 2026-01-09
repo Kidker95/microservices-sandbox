@@ -8,6 +8,8 @@ import { dal } from "./dal";
 export class App {
     public readonly server: Express;
 
+    
+
     constructor() {
         this.server = express();
         this.registerInfra();
@@ -19,6 +21,7 @@ export class App {
     private registerInfra(): void {
         this.server.use(express.json());
     }
+    
 
     private registerRoutes(): void {
         this.server.get("/health", (req: Request, res: Response) => {

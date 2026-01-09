@@ -21,7 +21,7 @@ export class App {
     private registerInfra(): void {
         this.server.use(express.json());
     }
-
+    
     private registerRoutes(): void {
         this.server.get("/health", (req: Request, res: Response) => {
             res.json({ status: "ok", service: "auth-service", uptimeSeconds: Math.floor(process.uptime()) });
