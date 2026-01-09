@@ -1,14 +1,22 @@
 import { NextFunction, Request, Response } from "express";
-import { orderService } from "../services/order-service";
 import { StatusCode } from "../models/enums";
 import { CreateOrderDto, Order } from "../models/types";
-import { productClient } from "../clients/product-client";
+import { orderService } from "../services/order-service";
 
 class OrdersController {
 
     public async getAllOrders(req: Request, res: Response, next: NextFunction) {
         try { return res.json(await orderService.getAllOrders()); }
         catch (err) { next(err); }
+    }
+
+    public async getMyOrders(req: Request, res: Response, next: NextFunction) {
+        try {
+            const userId = (req as any).user?.userId;
+            if (!userId) return res.status(StatusCode.BadRequest).json({ error: "missing userId" });
+            const orders = await orderService.getMyOrders(userId);
+            return res.json(orders);
+        } catch (err) { next(err); }
     }
 
     public async getOrderById(req: Request, res: Response, next: NextFunction) {
@@ -23,8 +31,9 @@ class OrdersController {
 
     public async addOrder(req: Request, res: Response, next: NextFunction) {
         try {
+            const token = req.headers.authorization;
             const orderPayload = req.body as CreateOrderDto;
-            const dbOrder = await orderService.addOrder(orderPayload);
+            const dbOrder = await orderService.addOrder(orderPayload,token);
             return res.status(StatusCode.Created).json(dbOrder);
         } catch (err) { next(err); }
     }
@@ -55,7 +64,7 @@ class OrdersController {
     public async deleteAll(req: Request, res: Response, next: NextFunction) {
         try {
             const deletedCount = await orderService.deleteAll();
-            return res.status(StatusCode.OK).json({deleted: deletedCount});
+            return res.status(StatusCode.OK).json({ deleted: deletedCount });
         } catch (err) { next(err); }
     }
 

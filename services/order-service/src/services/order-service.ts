@@ -13,7 +13,16 @@ class OrderService {
         if (!isValid) throw new BadRequestError(`_id ${_id} is invalid`);
     }
 
+    // CRUDs and GETs
+
     public async getAllOrders(): Promise<OrderDocument[]> { return await OrderModel.find().exec(); }
+
+    public async getMyOrders(userId: string): Promise<OrderDocument[]> {
+        this.validateId(userId);
+        const orders = await OrderModel.find({ userId }).sort({ createdAt: -1 }).exec();
+        return orders;
+
+    }
 
     public async getOrderById(_id: string): Promise<OrderDocument> {
         this.validateId(_id);
@@ -23,27 +32,27 @@ class OrderService {
         return order;
     }
 
-    public async addOrder(order: CreateOrderDto): Promise<OrderDocument> {
+    public async addOrder(order: CreateOrderDto, token?: string): Promise<OrderDocument> {
 
         if (!order.items || order.items.length === 0) throw new BadRequestError("Order must contain at least one item");
-        
-    
-        // 1. validate user exists
-        await userClient.getUserById(order.userId);
-    
+
+        await userClient.getUserById(order.userId, token);
+
         const items: OrderItem[] = [];
         let subtotal = 0;
-    
-        // 2. build items + subtotal
+
         for (const item of order.items) {
-            const product = await productClient.getProductById(item.productId);
+            console.log("addOrder: fetching product", item.productId);
+
+            const product = await productClient.getProductById(item.productId, token);
+
             if (!product.isActive) throw new BadRequestError(`product ${product.name} is inactive`);
-            
-    
+
+
             const unitPrice = product.price;
             subtotal += unitPrice * item.quantity;
-    
-            const orderItem = {
+
+            items.push({
                 productId: product._id,
                 sku: product.sku,
                 name: product.name,
@@ -52,15 +61,12 @@ class OrderService {
                 quantity: item.quantity,
                 unitPrice,
                 currency: product.currency
-            };
-    
-            items.push(orderItem as OrderItem);
+            } as OrderItem);
         }
-    
-        const shippingCost = 0; // for now
+
+        const shippingCost = 0;
         const total = subtotal + shippingCost;
-    
-        // 3. create the order document with all the fields
+
         const orderDoc = new OrderModel({
             userId: order.userId,
             items,
@@ -70,25 +76,19 @@ class OrderService {
             total,
             shippingAddress: order.shippingAddress
         });
-    
+
         BadRequestError.validateSync(orderDoc);
         await orderDoc.save();
-    
-        // 4. after saving, update stock in product-service
-        for (const item of order.items) await productClient.adjustStock(item.productId, -item.quantity);
-        
-    
+        for (const item of order.items) await productClient.adjustStock(item.productId, -item.quantity, token);
+
         return this.getOrderById(orderDoc._id.toString());
     }
-    
+
+
     public async updateOrder(_id: string, order: Partial<Omit<Order, "_id" | "createdAt" | "updatedAt">>): Promise<OrderDocument> {
         this.validateId(_id);
 
-        const updatedOrder = await OrderModel.findByIdAndUpdate(
-            _id,
-            order,
-            { new: true, runValidators: true }
-        ).exec();
+        const updatedOrder = await OrderModel.findByIdAndUpdate(_id, order, { new: true, runValidators: true }).exec();
 
         if (!updatedOrder) throw new NotFoundError(`Order with _id ${_id} not found`);
         return updatedOrder;
@@ -105,7 +105,7 @@ class OrderService {
         const result = await OrderModel.deleteMany({});
         return result.deletedCount ?? 0;
     }
-    
+
 
     // talk to user-service
 

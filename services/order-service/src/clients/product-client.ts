@@ -31,19 +31,25 @@ class ProductClient {
         return data as RemoteProduct;
     }
 
-    public async getProductById(_id: string): Promise<RemoteProduct> {
+    public async getProductById(_id: string, token?: string): Promise<RemoteProduct> {
         this.validateId(_id);
 
-        const response = await fetch(`${this.baseUrl}/products/${_id}`);
+        const init: RequestInit = token ? { headers: { Authorization: token } } : {};
+        const response = await fetch(`${this.baseUrl}/products/${_id}`, init);
+
         return this.handleResponse(response, _id);
     }
 
-    public async adjustStock(_id: string, delta: number): Promise<RemoteProduct> {
+    public async adjustStock(_id: string, delta: number, token?: string): Promise<RemoteProduct> {
         this.validateId(_id);
 
         const response = await fetch(`${this.baseUrl}/products/${_id}/stock`, {
             method: "PATCH",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+                ...(token ? { Authorization: token } : {})
+            },
+
             body: JSON.stringify({ delta })
         });
 
