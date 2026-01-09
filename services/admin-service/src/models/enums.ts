@@ -15,6 +15,8 @@ export enum ServiceName {
     ProductService =  "product-service",
     ReceiptService =  "receipt-service",
     FortuneService =  "fortune-service",
+    AuthService =  "auth-service",
+    Nginx = "nginx"
 }
 
 export enum UserRole {

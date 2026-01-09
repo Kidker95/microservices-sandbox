@@ -12,6 +12,8 @@ class HealthClient {
         { name: ServiceName.ProductService, baseUrl: env.productServiceBaseUrl },
         { name: ServiceName.ReceiptService, baseUrl: env.receiptServiceBaseUrl },
         { name: ServiceName.FortuneService, baseUrl: env.fortuneServiceBaseUrl },
+        { name: ServiceName.AuthService, baseUrl: env.authServiceBaseUrl },
+        { name: ServiceName.Nginx, baseUrl: env.nginxHealthUrl },
     ];
 
     private async checkOne(service: BasicService): Promise<ServiceStatus> {

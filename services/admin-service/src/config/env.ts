@@ -10,7 +10,8 @@ class Env {
     public readonly productServiceBaseUrl: string = process.env.PRODUCT_SERVICE_BASE_URL || "http://localhost:4003";
     public readonly receiptServiceBaseUrl: string = process.env.RECEIPT_SERVICE_BASE_URL || "http://localhost:4004";
     public readonly fortuneServiceBaseUrl: string = process.env.FORTUNE_SERVICE_BASE_URL || "http://localhost:4006";
-    public readonly authServiceBaseUrl: string = process.env.AUTH_SERVICE_BASE_URL || "http://localhost:4007/api"
+    public readonly authServiceBaseUrl: string = process.env.AUTH_SERVICE_BASE_URL || "http://localhost:4007/api";
+    public readonly nginxHealthUrl: string = process.env.NGINX_HEALTH_URL || "http://localhost:8080";
 }
 
 export const env = new Env();
