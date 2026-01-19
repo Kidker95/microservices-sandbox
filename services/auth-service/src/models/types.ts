@@ -35,7 +35,7 @@ export type AddressInput = {
 export type RegisterInput = {
     email: string;
     password: string;
-    name: string;
-    address: AddressInput;
+    name?: string;
+    address?: AddressInput;
+    userId?: string;
 };
-

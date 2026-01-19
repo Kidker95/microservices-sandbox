@@ -4,12 +4,14 @@ const SEED_USERS = Number(process.env.SEED_USERS ?? 50);
 const SEED_PRODUCTS = Number(process.env.SEED_PRODUCTS ?? 120);
 const SEED_ORDERS = Number(process.env.SEED_ORDERS ?? 200);
 
+const ROOT_ADMIN_EMAIL = process.env.SEED_ROOT_ADMIN_EMAIL || "seed-root-admin@sandbox.com";
+const ROOT_ADMIN_PASSWORD = "SeedRootAdmin!123";
 
 const services = {
     users: "http://localhost:4001",
     orders: "http://localhost:4002",
     products: "http://localhost:4003",
-    receipts: "http://localhost:4004"
+    auth: "http://localhost:4007"
 } as const;
 
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= H E L P E R S =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -24,12 +26,15 @@ async function fetchWithTimeout(url: string, init: RequestInit, ms = 8000): Prom
     finally { clearTimeout(id); }
 }
 
+async function readJsonSafe(res: Response): Promise<any> {
+    const text = await res.text();
+    if (!text) return null;
+    try { return JSON.parse(text); } catch { return { raw: text }; }
+}
+
 async function checkHealth(name: string, baseUrl: string): Promise<void> {
     const res = await fetchWithTimeout(`${baseUrl}/health`, { method: "GET" }, 4000);
-
-    const text = await res.text();
-    let data: any = null;
-    try { data = text ? JSON.parse(text) : null; } catch { data = { raw: text }; }
+    const data = await readJsonSafe(res);
 
     if (!res.ok) {
         const message = data?.error || `${res.status} ${res.statusText}`;
@@ -39,14 +44,6 @@ async function checkHealth(name: string, baseUrl: string): Promise<void> {
     console.log(`${name}:`, data);
 }
 
-async function checkAllHealth(): Promise<void> {
-    line();
-    console.log("Checking services health...");
-    const entries = Object.entries(services) as Array<[keyof typeof services, string]>;
-    for (const [name, url] of entries) await checkHealth(String(name), url);
-    line();
-}
-
 async function postJson<T>(url: string, body: unknown): Promise<T> {
     const res = await fetchWithTimeout(url, {
         method: "POST",
@@ -54,9 +51,7 @@ async function postJson<T>(url: string, body: unknown): Promise<T> {
         body: JSON.stringify(body)
     });
 
-    const text = await res.text();
-    let data: any = null;
-    try { data = text ? JSON.parse(text) : null; } catch { data = { raw: text }; }
+    const data = await readJsonSafe(res);
 
     if (!res.ok) {
         const message = data?.error || `${res.status} ${res.statusText}`;
@@ -66,12 +61,36 @@ async function postJson<T>(url: string, body: unknown): Promise<T> {
     return data as T;
 }
 
-async function deleteJson<T>(url: string): Promise<T> {
-    const res = await fetchWithTimeout(url, { method: "DELETE" });
+async function postJsonAuth<T>(url: string, token: string, body: unknown): Promise<T> {
+    const res = await fetchWithTimeout(url, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(body)
+    });
 
-    const text = await res.text();
-    let data: any = null;
-    try { data = text ? JSON.parse(text) : null; } catch { data = { raw: text }; }
+    const data = await readJsonSafe(res);
+
+    if (!res.ok) {
+        const message = data?.error || `${res.status} ${res.statusText}`;
+        throw new Error(`POST ${url} failed: ${message}`);
+    }
+
+    return data as T;
+}
+
+async function deleteJsonAuth<T>(url: string, token: string, headers: Record<string, string> = {}): Promise<T> {
+    const res = await fetchWithTimeout(url, {
+        method: "DELETE",
+        headers: {
+            Authorization: `Bearer ${token}`,
+            ...headers
+        }
+    });
+
+    const data = await readJsonSafe(res);
 
     if (!res.ok) {
         const message = data?.error || `${res.status} ${res.statusText}`;
@@ -158,7 +177,6 @@ function createUserPayload(i: number) {
     return {
         name,
         email,
-        passwordHash: `seed-hash-${num}`,
         address: {
             fullName: name,
             street: `${idx} ${crew} Street`,
@@ -223,18 +241,43 @@ function createProductPayload(i: number) {
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= M A I N =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 async function main(): Promise<void> {
-    await checkAllHealth();
+    line();
+    console.log("Checking services health...");
+    await checkHealth("user-service", services.users);
+    await checkHealth("product-service", services.products);
+    await checkHealth("order-service", services.orders);
+    await checkHealth("auth-service", services.auth);
+    line();
+
+    console.log("Logging in as root admin...");
+    const login = await postJson<{ token: string }>(`${services.auth}/api/auth/login`, {
+        email: ROOT_ADMIN_EMAIL,
+        password: ROOT_ADMIN_PASSWORD
+    });
+    const adminToken = login.token;
+    if (!adminToken) throw new Error("Root admin login failed: missing token");
 
     console.log("🧹 Wiping existing data...");
 
-    const deletedOrders = await deleteJson<{ deleted: number }>(`${services.orders}/api/orders`);
+    const deletedOrders = await deleteJsonAuth<{ deleted: number }>(`${services.orders}/api/orders`, adminToken);
     console.log("Deleted orders:", deletedOrders.deleted);
 
-    const deletedProducts = await deleteJson<{ deleted: number }>(`${services.products}/api/products`);
+    const deletedProducts = await deleteJsonAuth<{ deleted: number }>(`${services.products}/api/products`, adminToken);
     console.log("Deleted products:", deletedProducts.deleted);
 
-    const deletedUsers = await deleteJson<{ deleted: number }>(`${services.users}/api/users`);
+    const deletedUsers = await deleteJsonAuth<{ deleted: number }>(
+        `${services.users}/api/users/seed-wipe`,
+        adminToken,
+        { "x-seed-wipe": "true" }
+    );
     console.log("Deleted users:", deletedUsers.deleted);
+
+    const deletedCredentials = await deleteJsonAuth<{ deleted: number }>(
+        `${services.auth}/api/auth/seed-wipe`,
+        adminToken,
+        { "x-seed-wipe": "true" }
+    );
+    console.log("Deleted credentials:", deletedCredentials.deleted);
 
     line();
     console.log(`Creating ${SEED_USERS} users...`);
@@ -243,10 +286,18 @@ async function main(): Promise<void> {
 
     for (let i = 0; i < SEED_USERS; i++) {
         const payload = createUserPayload(i);
-        const created = await postJson<any>(`${services.users}/api/users`, payload);
-        createdUsers.push(created);
+        const created = await postJsonAuth<any>(`${services.users}/api/users`, adminToken, payload);
+        createdUsers.push({ ...created, seedPassword: `SeedPass!${pad3(i + 1)}` });
 
-        if ((i + 1) % 10 === 0) console.log(`✅ Created ${i + 1}/50 users`);
+        if ((i + 1) % 10 === 0) console.log(`✅ Created ${i + 1}/${SEED_USERS} users`);
+    }
+
+    for (const user of createdUsers) {
+        await postJson(`${services.auth}/api/auth/register`, {
+            email: user.email,
+            password: user.seedPassword,
+            userId: user._id
+        });
     }
 
     line();
@@ -260,15 +311,26 @@ async function main(): Promise<void> {
 
     for (let i = 0; i < SEED_PRODUCTS; i++) {
         const payload = createProductPayload(i);
-        const created = await postJson<any>(`${services.products}/api/products`, payload);
+        const created = await postJsonAuth<any>(`${services.products}/api/products`, adminToken, payload);
         createdProducts.push(created);
         productStock.set(created._id, created.stock);
 
-        if ((i + 1) % 10 === 0) console.log(`✅ Created ${i + 1}/120 products`);
+        if ((i + 1) % 10 === 0) console.log(`✅ Created ${i + 1}/${SEED_PRODUCTS} products`);
     }
 
     line();
     console.log("✅ Products done. First product id:", createdProducts[0]?._id);
+
+    const loginUsers = createdUsers.slice(0, Math.min(10, createdUsers.length));
+    const loggedInUsers: Array<{ user: any; token: string }> = [];
+
+    for (const user of loginUsers) {
+        const result = await postJson<{ token: string }>(`${services.auth}/api/auth/login`, {
+            email: user.email,
+            password: user.seedPassword
+        });
+        loggedInUsers.push({ user, token: result.token });
+    }
 
     line();
     console.log(`Creating ${SEED_ORDERS} orders...`);
@@ -276,7 +338,9 @@ async function main(): Promise<void> {
     const createdOrderIds: string[] = [];
 
     for (let i = 0; i < SEED_ORDERS; i++) {
-        const user = sampleOne(createdUsers);
+        const userLogin = sampleOne(loggedInUsers);
+        const user = userLogin.user;
+        const userToken = userLogin.token;
 
         const itemsCount = randInt(1, 5);
 
@@ -297,13 +361,13 @@ async function main(): Promise<void> {
         const rawItems = pickedProducts.map(p => {
             const availableStock = productStock.get(p._id) ?? 0;
             if (availableStock <= 0) return null;
-        
+
             const maxQuantity = Math.min(3, availableStock);
             const quantity = randInt(1, maxQuantity);
-        
+
             const includeSize = Math.random() < 0.35;
             const includeColor = Math.random() < 0.5;
-        
+
             return {
                 productId: p._id,
                 quantity,
@@ -311,11 +375,9 @@ async function main(): Promise<void> {
                 ...(includeColor ? { color: sampleOne(orderColors) } : {})
             };
         });
-        
-        const items = rawItems.filter(notNull);
-        
 
-        // If something weird happened and all items got filtered out, skip this order
+        const items = rawItems.filter(notNull);
+
         if (items.length === 0) {
             console.log("⚠️ Skipping order: no valid items after stock check");
             continue;
@@ -327,21 +389,36 @@ async function main(): Promise<void> {
             shippingAddress: user.address
         };
 
-        const created = await postJson<any>(`${services.orders}/api/orders`, payload);
+        const created = await postJsonAuth<any>(`${services.orders}/api/orders`, userToken, payload);
 
         for (const item of items) {
             const left = productStock.get(item.productId) ?? 0;
             productStock.set(item.productId, left - item.quantity);
         }
-        
 
         createdOrderIds.push(created._id);
 
-        if ((i + 1) % 20 === 0) console.log(`✅ Created ${i + 1}/200 orders`);
+        if ((i + 1) % 20 === 0) console.log(`✅ Created ${i + 1}/${SEED_ORDERS} orders`);
     }
 
     line();
     console.log("✅ Orders done. First order id:", createdOrderIds[0]);
+
+    const rootAdminRes = await fetchWithTimeout(
+        `${services.users}/api/users/by-email/${encodeURIComponent(ROOT_ADMIN_EMAIL)}`,
+        { method: "GET" }
+    );
+    const rootAdminData = await readJsonSafe(rootAdminRes);
+    if (!rootAdminRes.ok) {
+        throw new Error(`Root admin check failed: ${rootAdminData?.error || rootAdminRes.statusText}`);
+    }
+
+    line();
+    console.log("Seed summary:");
+    console.log("Users created:", createdUsers.length);
+    console.log("Products created:", createdProducts.length);
+    console.log("Orders created:", createdOrderIds.length);
+    console.log("Root admin preserved:", rootAdminData?.email || ROOT_ADMIN_EMAIL);
 
     console.log("🌱 Seed script ending... 🌱");
 }
@@ -350,5 +427,3 @@ main().catch(err => {
     console.error("Seed failed:", err);
     process.exit(1);
 });
-
-

@@ -1,15 +1,23 @@
 import { NextFunction, Request, Response } from "express";
 import { StatusCode } from "../models/enums";
+import { ForbiddenError } from "../models/errors";
 import { CredentialsInput, RegisterInput } from "../models/types";
 import { authService } from "../services/auth-service";
+import { env } from "../config/env";
 
 class AuthController {
 
     public async register(req: Request, res: Response, next: NextFunction) {
         try {
             const input = req.body as RegisterInput;
-    
-            if (!input.email || !input.password || !input.name || !input.address) {
+
+            if (input.userId) {
+                if (!input.email || !input.password || !input.userId) {
+                    return res.status(StatusCode.BadRequest).json({
+                        error: "Missing required fields: email, password, userId"
+                    });
+                }
+            } else if (!input.email || !input.password || !input.name || !input.address) {
                 return res.status(StatusCode.BadRequest).json({
                     error: "Missing required fields: email, password, name, address"
                 });
@@ -51,6 +59,15 @@ class AuthController {
 
         const context = authService.verifyToken(token);
         return res.status(StatusCode.OK).json(context);
+    }
+
+    public async seedWipe(req: Request, res: Response, next: NextFunction) {
+        try {
+            if (env.environment === "production") throw new ForbiddenError("Seed wipe is disabled in production");
+            if (req.header("x-seed-wipe") !== "true") throw new ForbiddenError("Seed wipe header missing");
+            const deleteCount = await authService.deleteAllExceptEmail(env.seedRootAdminEmail);
+            return res.status(StatusCode.OK).json({ deleted: deleteCount });
+        } catch (err) { next(err); }
     }
 
 }

@@ -28,38 +28,46 @@ class AuthService {
 
     public async register(input: RegisterInput): Promise<string> {
 
-        if (!input.email || !input.password || !input.name || !input.address) throw new BadRequestError("Missing required fields: email, password, name, address");
-        
-    
+        if (!input.email || !input.password) throw new BadRequestError("Missing required fields: email, password");
+
         const existingUser = await userClient.getUserByEmail(input.email);
-        if (existingUser) throw new BadRequestError("User already exists");
-    
-        const createdUser = await userClient.createUser({
-            email: input.email,
-            name: input.name,
-            address: input.address
-        });
-    
+
+        let user = existingUser;
+
+        if (input.userId) {
+            if (!user) throw new BadRequestError("User not found");
+            if (user._id !== input.userId) throw new BadRequestError("userId does not match email");
+        } else {
+            if (!input.name || !input.address) throw new BadRequestError("Missing required fields: name, address");
+            if (user) throw new BadRequestError("User already exists");
+
+            user = await userClient.createUser({
+                email: input.email,
+                name: input.name,
+                address: input.address
+            });
+        }
+
         const passwordHash = await hashing.hashPassword(input.password);
-    
+
         try {
             await CredentialsModel.create({
                 email: input.email,
                 passwordHash,
-                userId: createdUser._id
+                userId: user!._id
             });
         }
         catch (err: any) {
             if (err?.code === 11000) throw new BadRequestError("email is already taken");
             throw err;
         }
-    
+
         const token = jwt.sign(
-            { sub: createdUser._id, role: createdUser.role },
+            { sub: user!._id, role: user!.role },
             env.jwtSecret,
             { expiresIn: "1h" }
         );
-    
+
         return token;
     }
 
@@ -89,6 +97,11 @@ class AuthService {
         // Stateless JWT: server cannot "delete" tokens.
         // Logout is client-side (client removes the token).
         return;
+    }
+
+    public async deleteAllExceptEmail(email: string): Promise<number> {
+        const result = await CredentialsModel.deleteMany({ email: { $ne: email } });
+        return result.deletedCount ?? 0;
     }
 
     
