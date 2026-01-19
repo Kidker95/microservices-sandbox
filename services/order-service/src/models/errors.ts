@@ -3,7 +3,7 @@ import { StatusCode } from "./enums";
 
 
 export abstract class ClientError {
-    protected constructor(public status: StatusCode, public message: string) {}
+    protected constructor(public status: StatusCode, public message: string) { }
 }
 
 export class BadRequestError extends ClientError {
@@ -32,5 +32,11 @@ export class ForbiddenError extends ClientError {
 export class NotFoundError extends ClientError {
     public constructor(message: string) {
         super(StatusCode.NotFound, message);
+    }
+}
+
+export class ServiceUnavailableError extends ClientError {
+    public constructor(message: string) {
+        super(StatusCode.ServiceUnavailable, message);
     }
 }
