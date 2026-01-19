@@ -19,7 +19,7 @@ public async verifyToken(token: string): Promise<AuthContext> {
 
         let response: Response;
         try {
-            response = await this.fetchWithTimeout(`${this.authServiceBaseUrl}/auth/verify`, {
+            response = await this.fetchWithTimeout(`${this.authServiceBaseUrl}/api/auth/verify`, {
                 method: "GET",
                 headers: { Authorization: `Bearer ${token}` }   
             }, 5000);
