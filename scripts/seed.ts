@@ -5,7 +5,7 @@ const SEED_PRODUCTS = Number(process.env.SEED_PRODUCTS ?? 120);
 const SEED_ORDERS = Number(process.env.SEED_ORDERS ?? 200);
 
 const ROOT_ADMIN_EMAIL = process.env.SEED_ROOT_ADMIN_EMAIL || "seed-root-admin@sandbox.com";
-const ROOT_ADMIN_PASSWORD = "SeedRootAdmin!123";
+const ROOT_ADMIN_PASSWORD = process.env.SEED_ROOT_ADMIN_PASSWORD || "SeedRootAdmin!123";
 
 const services = {
     users: "http://localhost:4001",
@@ -384,7 +384,6 @@ async function main(): Promise<void> {
         }
 
         const payload = {
-            userId: user._id,
             items,
             shippingAddress: user.address
         };
@@ -418,7 +417,6 @@ async function main(): Promise<void> {
     console.log("Users created:", createdUsers.length);
     console.log("Products created:", createdProducts.length);
     console.log("Orders created:", createdOrderIds.length);
-    console.log("Root admin preserved:", rootAdminData?.email || ROOT_ADMIN_EMAIL);
 
     console.log("🌱 Seed script ending... 🌱");
 }

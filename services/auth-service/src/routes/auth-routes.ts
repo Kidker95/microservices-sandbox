@@ -14,4 +14,6 @@ authRouter.delete("/seed-wipe",
     authController.seedWipe.bind(authController));
 
 
-authRouter.get("/verify", authController.verify.bind(authController));
+authRouter.get("/verify",
+    securityMiddleware.verifyLoggedIn.bind(securityMiddleware),
+    authController.verify.bind(authController));
