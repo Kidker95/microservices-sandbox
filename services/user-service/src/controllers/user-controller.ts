@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 import { userService } from "../services/user-service";
 import { StatusCode } from "../models/enums";
-import express from 'express'
-import { UserModel } from "../models/user-model";
+import { ForbiddenError } from "../models/errors";
+import { env } from "../config/env";
 
 
 class UserController {
@@ -57,6 +57,15 @@ class UserController {
         try {
             const deleteCount = await userService.deleteAll();
             return res.status(StatusCode.OK).json({deleted: deleteCount})
+        } catch (err) { next(err); }
+    }
+
+    public async seedWipe(req: Request, res: Response, next: NextFunction) {
+        try {
+            if (env.environment === "production") throw new ForbiddenError("Seed wipe is disabled in production");
+            if (req.header("x-seed-wipe") !== "true") throw new ForbiddenError("Seed wipe header missing");
+            const deleteCount = await userService.deleteAllExceptEmail(env.seedRootAdminEmail);
+            return res.status(StatusCode.OK).json({ deleted: deleteCount });
         } catch (err) { next(err); }
     }
 

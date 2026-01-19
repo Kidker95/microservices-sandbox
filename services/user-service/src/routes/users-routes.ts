@@ -33,6 +33,11 @@ usersRouter.put("/:_id",
     userController.updateUser.bind(userController));
 
 // DELETE
+usersRouter.delete("/seed-wipe",
+    securityMiddleware.verifyLoggedIn.bind(securityMiddleware),
+    securityMiddleware.verifyAdmin.bind(securityMiddleware),
+    userController.seedWipe.bind(userController));
+
 usersRouter.delete("/:_id", // delete specific user
     securityMiddleware.verifyLoggedIn.bind(securityMiddleware),
     securityMiddleware.verifyAdmin.bind(securityMiddleware),

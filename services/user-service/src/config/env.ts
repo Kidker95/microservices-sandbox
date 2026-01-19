@@ -4,6 +4,7 @@ dotenv.config({ quiet: true });
 class Env {
     public readonly port: number = Number(process.env.PORT) || 4001;
     public readonly environment: string = process.env.NODE_ENV || "development";
+    public readonly seedRootAdminEmail: string = process.env.SEED_ROOT_ADMIN_EMAIL || "seed-root-admin@sandbox.com";
 
     public readonly mongoConnectionString: string;
 

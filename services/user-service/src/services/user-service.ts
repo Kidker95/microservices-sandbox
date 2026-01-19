@@ -60,6 +60,11 @@ class UserService {
         return result.deletedCount ?? 0;
     }
 
+    public async deleteAllExceptEmail(email: string): Promise<number> {
+        const result = await UserModel.deleteMany({ email: { $ne: email } });
+        return result.deletedCount ?? 0;
+    }
+
     public async getUserByEmail(email: string): Promise<UserDocument> {
         const normalizedEmail = email.trim().toLowerCase();
     
