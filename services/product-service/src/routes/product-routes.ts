@@ -31,7 +31,6 @@ productRouter.put("/:_id", // update product
 
 productRouter.patch("/:_id/stock", // adjust stock
     securityMiddleware.verifyLoggedIn.bind(securityMiddleware),
-    securityMiddleware.verifyAdmin.bind(securityMiddleware),
     productController.adjustStock.bind(productController));
 
 productRouter.patch("/:_id/active", // toggle active/inactive

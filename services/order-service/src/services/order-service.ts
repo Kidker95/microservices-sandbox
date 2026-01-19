@@ -36,13 +36,10 @@ class OrderService {
 
         if (!order.items || order.items.length === 0) throw new BadRequestError("Order must contain at least one item");
 
-        await userClient.getUserById(order.userId, token);
-
         const items: OrderItem[] = [];
         let subtotal = 0;
 
         for (const item of order.items) {
-            console.log("addOrder: fetching product", item.productId);
 
             const product = await productClient.getProductById(item.productId, token);
 

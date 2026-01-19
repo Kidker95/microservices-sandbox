@@ -12,7 +12,6 @@ usersRouter.get("/", // get all users
     userController.getAllUsers.bind(userController));
 
     usersRouter.get("/:_id",
-        (req: any, _res: any, next: any) => { console.log("USER route hit /users/:_id"); next(); },
         securityMiddleware.verifyLoggedIn.bind(securityMiddleware),
         securityMiddleware.verifyOwnerOrAdmin((req) => req.params._id!),
         userController.getUserById.bind(userController));

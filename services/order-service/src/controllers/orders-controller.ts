@@ -31,9 +31,11 @@ class OrdersController {
 
     public async addOrder(req: Request, res: Response, next: NextFunction) {
         try {
+            const auth = (req as any).user;
             const token = req.headers.authorization;
             const orderPayload = req.body as CreateOrderDto;
-            const dbOrder = await orderService.addOrder(orderPayload,token);
+            orderPayload.userId = auth.userId;
+            const dbOrder = await orderService.addOrder(orderPayload, token);
             return res.status(StatusCode.Created).json(dbOrder);
         } catch (err) { next(err); }
     }
