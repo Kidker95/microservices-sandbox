@@ -4,14 +4,18 @@ import { StatusCode } from "../models/enums";
 
 class ErrorMiddleware {
 
-    public catchAll(err: any, req: Request, res: Response, next: NextFunction): void {
+     public catchAll(err: any, req: Request, res: Response, next: NextFunction): void {
         console.error(err);
 
 
         const status: number = err?.status || StatusCode.InternalServerError;
-        const message: string = err?.message || `Internal Server Error`;
+        const payload: any = { error: err?.message || `Internal Server Error` };
 
-        res.status(status).json({ error: message });
+        if (err?.service) payload.service = err.service;
+        if (err?.dependency) payload.dependency = err.dependency;
+        if (err?.details) payload.details = err.details;
+
+        res.status(status).json(payload);
     }
 
     public routeNotFound(req: Request, res: Response, next: NextFunction): void {

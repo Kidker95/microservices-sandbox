@@ -13,8 +13,9 @@ const router = Router();
 router.get("/:orderId/html", securityMiddleware.verifyLoggedIn.bind(securityMiddleware), asyncHandler(async (req: Request, res: Response) => {
     const orderId = req.params.orderId;
     if (!orderId) throw new BadRequestError("orderId not provided");
-    const requester = (req as any).user; // ✅ add
-    const html = await receiptService.generateHtml(orderId, requester);
+    const requester = (req as any).user;
+    const token = req.headers.authorization;
+    const html = await receiptService.generateHtml(orderId, requester,token);
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     return res.send(html);
 }));
@@ -24,8 +25,9 @@ router.get("/:orderId/pdf",securityMiddleware.verifyLoggedIn.bind(securityMiddle
         const orderId = req.params.orderId;
         if (!orderId) throw new BadRequestError("orderId not provided");
 
-        const requester = (req as any).user; // ✅ add
-        const pdf = await receiptService.generatePdf(orderId, requester);
+        const requester = (req as any).user;
+        const token = req.headers.authorization;
+        const pdf = await receiptService.generatePdf(orderId, requester,token);
 
         res.setHeader("Content-Type", "application/pdf");
         res.setHeader("Content-Disposition", `inline; filename="receipt-${orderId}.pdf"`);
