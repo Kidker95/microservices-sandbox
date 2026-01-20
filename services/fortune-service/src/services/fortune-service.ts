@@ -4,8 +4,8 @@ import { Fortune } from "../models/types";
 class FortuneService {
 
     public getRandomFortune(): Promise<Fortune> { return apiClient.getRandomFortune(); }
-    public getMultipleFortunes(limit: number): Promise<Fortune[]> { return apiClient.getMultipleFortunes(limit); }
 
+    public getMultipleFortunes(limit: number): Promise<Fortune[]> { return apiClient.getMultipleFortunes(limit); }
 
 }
 
