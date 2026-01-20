@@ -15,7 +15,7 @@ import { AuthContext } from "../models/types";
 
 class ReceiptService {
 
-    // formaters:
+    // formatters:
 
     private formatDate(value: string | Date): string {
         const d = typeof value === "string" ? new Date(value) : value;
@@ -43,31 +43,30 @@ class ReceiptService {
 
     // helpers:
 
-    private async gatherResources(orderId: string, requester: AuthContext): Promise<ReceiptResources> {
-        const order = await orderClient.getOrderById(orderId);
-    
+    private async gatherResources(orderId: string, requester: AuthContext, token?: string): Promise<ReceiptResources> {
+        const order = await orderClient.getOrderById(orderId, token);
+
         const isAdmin = requester.role === UserRole.Admin;
         const isOwner = requester.userId === order.userId;
-    
+
         if (!isAdmin && !isOwner) throw new ForbiddenError("Forbidden");
-    
-        const userPromise = userClient.getUserById(order.userId);
-    
+
+        const userPromise = userClient.getUserById(order.userId, token);
+
         const productIds = [...new Set(order.items.map(item => item.productId))];
-        const productsPromise = productClient.getProductsByIdArr(productIds);
-    
+        const productsPromise = productClient.getProductsByIdArr(productIds, token);
+
         const fortunePromise = fortuneClient.getFortune();
-    
+
         const [user, products, fortunes] = await Promise.all([userPromise, productsPromise, fortunePromise]);
-    
+
         const resources: ReceiptResources = { order, user, products };
-    
+
         const firstFortune = fortunes[0];
         if (firstFortune) resources.fortune = firstFortune;
-    
+
         return resources;
     }
-    
 
 
     private mapToReceiptData(resources: ReceiptResources): ReceiptData {
@@ -135,16 +134,16 @@ class ReceiptService {
 
     private mapToReceiptView(receipt: ReceiptData, fortune?: Fortune): Omit<ReceiptView, "css"> {
         const currency = receipt.order.currency || "ILS";
-    
+
         const items = receipt.items.map(item => ({
             name: item.name,
             quantity: item.quantity,
             price: this.formatMoney(item.unitPrice, currency),
             lineTotal: this.formatMoney(item.lineTotal, currency)
         }));
-    
+
         const tax = 0;
-    
+
         const view: Omit<ReceiptView, "css"> = {
             receiptNumber: receipt.order.orderId,
             date: this.formatDate(receipt.order.createdAtFormatted),
@@ -156,43 +155,40 @@ class ReceiptService {
             tax: this.formatMoney(tax, currency),
             total: this.formatMoney(receipt.order.total, currency)
         };
-    
+
         if (fortune) {
             view.fortuneText = fortune.fortune;
             view.fortuneAuthor = fortune.author;
         }
-    
+
         return view;
     }
-    
 
-    public async generateHtml(orderId: string, requester: AuthContext): Promise<string> {
-        const resources = await this.gatherResources(orderId, requester);
+    public async generateHtml(orderId: string, requester: AuthContext, token?: string): Promise<string> {
+        const resources = await this.gatherResources(orderId, requester, token);
         const receipt = this.mapToReceiptData(resources);
         const view = this.mapToReceiptView(receipt, resources.fortune);
         return htmlTemplate.renderReceiptHtml(view);
     }
-    
-    public async generatePdf(orderId: string, requester: AuthContext): Promise<Buffer> {
-        const html = await this.generateHtml(orderId, requester);
-    
+
+    public async generatePdf(orderId: string, requester: AuthContext, token?: string): Promise<Buffer> {
+        const html = await this.generateHtml(orderId, requester, token);
+
         const browser = await pdfBrowser.getBrowser();
         const page = await browser.newPage();
-    
+
         try {
             await page.setContent(html, { waitUntil: "load" });
-    
+
             const pdf = await page.pdf({
                 format: "A4",
                 printBackground: true,
                 margin: { top: "20mm", right: "15mm", bottom: "20mm", left: "15mm" }
             });
-    
+
             return Buffer.from(pdf);
         } finally { await page.close(); }
     }
-    
-
 
 }
 

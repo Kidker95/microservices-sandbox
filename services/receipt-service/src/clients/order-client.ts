@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { BadRequestError, NotFoundError } from "../models/errors";
+import { BadRequestError, NotFoundError, ServiceUnavailableError } from "../models/errors";
 import { env } from "../config/env";
 import { RemoteOrder } from "../models/types";
 import { StatusCode } from "../models/enums";
@@ -31,13 +31,30 @@ class OrderClient {
         if (!isValid) throw new BadRequestError(`_id ${_id} is invalid`);
     }
 
-    public async getOrderById(orderId: string): Promise<RemoteOrder> {
+    private async fetchWithTimeout(url: string, init: RequestInit = {}, ms = 5000): Promise<Response> {
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), ms);
+
+
+        try { return await fetch(url, { ...init, signal: controller.signal }); }
+        finally { clearTimeout(id); }
+    }
+
+    public async getOrderById(orderId: string, token?: string): Promise<RemoteOrder> {
         this.validateId(orderId);
-        let response: any;
+        const init: RequestInit = token ? { headers: { Authorization: token } } : {};
+        let response: Response;
         try {
-            response = await fetch(`${this.orderServiceBaseUrl}/orders/${orderId}`);
-        } catch {
-            throw new BadRequestError(`order-service is unreachable`);
+            response = await this.fetchWithTimeout(`${this.orderServiceBaseUrl}/orders/${orderId}`, init);
+        } catch (err) {
+            throw Object.assign(
+                new ServiceUnavailableError("Dependency unavailable: order-service"),
+                {
+                    service: "receipt-service",
+                    dependency: "order-service",
+                    details: err instanceof Error ? err.message : String(err)
+                }
+            );
         }
         return this.handleResponse(response, orderId);
     }

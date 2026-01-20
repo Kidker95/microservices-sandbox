@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { BadRequestError, NotFoundError } from "../models/errors";
+import { BadRequestError, NotFoundError, ServiceUnavailableError } from "../models/errors";
 import { env } from "../config/env";
 import { RemoteProduct } from "../models/types";
 
@@ -7,9 +7,28 @@ class ProductClient {
 
     private baseUrl = env.productServiceBaseUrl;
 
+    private async fetchWithTimeout(url: string, init: RequestInit = {}, ms = 5000): Promise<Response> {
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), ms);
+
+        try { return await fetch(url, { ...init, signal: controller.signal }); }
+        finally { clearTimeout(id); }
+    }
+
     private validateId(_id: string): void {
         const isValid = mongoose.isValidObjectId(_id);
         if (!isValid) throw new BadRequestError(`_id ${_id} is invalid`);
+    }
+
+    private throwUnavailable(err: unknown): never {
+        throw Object.assign(
+            new ServiceUnavailableError("Dependency unavailable: product-service"),
+            {
+                service: "order-service",
+                dependency: "product-service",
+                details: err instanceof Error ? err.message : String(err)
+            }
+        );
     }
 
     // Shared response handler – reads body ONLY ONCE
@@ -35,23 +54,28 @@ class ProductClient {
         this.validateId(_id);
 
         const init: RequestInit = token ? { headers: { Authorization: token } } : {};
-        const response = await fetch(`${this.baseUrl}/products/${_id}`, init);
+        let response: Response;
+
+        try { response = await this.fetchWithTimeout(`${this.baseUrl}/products/${_id}`, init, 5000); }
+        catch (err) { this.throwUnavailable(err); }
 
         return this.handleResponse(response, _id);
     }
 
     public async adjustStock(_id: string, delta: number, token?: string): Promise<RemoteProduct> {
         this.validateId(_id);
+        let response: Response;
 
-        const response = await fetch(`${this.baseUrl}/products/${_id}/stock`, {
-            method: "PATCH",
-            headers: {
-                "Content-Type": "application/json",
-                ...(token ? { Authorization: token } : {})
-            },
-
-            body: JSON.stringify({ delta })
-        });
+        try {
+            response = await this.fetchWithTimeout(`${this.baseUrl}/products/${_id}/stock`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(token ? { Authorization: token } : {})
+                },
+                body: JSON.stringify({ delta })
+            }, 5000);
+        } catch (err) { this.throwUnavailable(err); }
 
         return this.handleResponse(response, _id);
     }

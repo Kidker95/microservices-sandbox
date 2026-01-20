@@ -10,13 +10,19 @@ import { securityMiddleware } from "../middleware/security-middleware";
 
 const router = Router();
 
-router.get("/",securityMiddleware.verifyLoggedIn.bind(securityMiddleware),securityMiddleware.verifyAdmin.bind(securityMiddleware), asyncHandler(async (req: Request, res: Response) => {
+router.get("/",
+    securityMiddleware.verifyLoggedIn.bind(securityMiddleware),
+    securityMiddleware.verifyAdmin.bind(securityMiddleware),
+    asyncHandler(async (req: Request, res: Response) => {
     const dashboard = await adminService.getDashboard();
     const html = htmlTemplate.renderAdminPanel(dashboard);
     res.status(StatusCode.OK).type("html").send(html);
 
 }));
 
-router.get("/status",securityMiddleware.verifyLoggedIn.bind(securityMiddleware),securityMiddleware.verifyAdmin.bind(securityMiddleware), asyncHandler(async (_req: Request, res: Response) => { res.json(await adminService.getDashboard()); }));
+router.get("/status",
+    securityMiddleware.verifyLoggedIn.bind(securityMiddleware),
+    securityMiddleware.verifyAdmin.bind(securityMiddleware),
+    asyncHandler(async (_req: Request, res: Response) => { res.json(await adminService.getDashboard()); }));
 
 export default router;

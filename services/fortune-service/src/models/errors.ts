@@ -8,9 +8,7 @@ export abstract class ClientError {
 export class BadRequestError extends ClientError {
     public constructor(message: string) {
         super(StatusCode.BadRequest, message);
-    }
-
-    
+    }  
 }
 
 export class UnauthorizedError extends ClientError {

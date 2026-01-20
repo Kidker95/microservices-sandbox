@@ -1,15 +1,23 @@
 import mongoose from "mongoose";
-import { BadRequestError, NotFoundError } from "../models/errors";
+import { BadRequestError, NotFoundError, ServiceUnavailableError } from "../models/errors";
 import { env } from "../config/env";
 import { RemoteUser } from "../models/types";
 import { StatusCode } from "../models/enums";
 
 class UserClient {
-    private baseUrl = env.userServiceBaseUrl;
+    private readonly baseUrl = env.userServiceBaseUrl;
 
     private validateId(_id: string): void {
         const isValid = mongoose.isValidObjectId(_id);
         if (!isValid) throw new BadRequestError(`_id ${_id} is invalid`);
+    }
+
+    private async fetchWithTimeout(url: string, init: RequestInit = {}, ms = 5000): Promise<Response> {
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), ms);
+
+        try { return await fetch(url, { ...init, signal: controller.signal }); }
+        finally { clearTimeout(id); }
     }
 
     // Shared response handler – reads body ONLY ONCE
@@ -31,13 +39,22 @@ class UserClient {
         return data as RemoteUser;
     }
 
-    public async getUserById(userId: string): Promise<RemoteUser> {
+    public async getUserById(userId: string, token?: string): Promise<RemoteUser> {
         this.validateId(userId);
-        let response: any;
+        const init: RequestInit = token ? { headers: { Authorization: token } } : {};
+
+        let response: Response;
         try {
-            response = await fetch(`${this.baseUrl}/users/${userId}`);
-        } catch {
-            throw new BadRequestError(`user-service is unreachable`);
+            response = await this.fetchWithTimeout(`${this.baseUrl}/users/${userId}`, init);
+        } catch (err) {
+            throw Object.assign(
+                new ServiceUnavailableError("Dependency unavailable: user-service"),
+                {
+                    service: "receipt-service",
+                    dependency: "user-service",
+                    details: err instanceof Error ? err.message : String(err)
+                }
+            );
         }
         return this.handleResponse(response, userId);
     }

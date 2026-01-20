@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-import { BadRequestError, NotFoundError } from "../models/errors";
+import { BadRequestError, NotFoundError, ServiceUnavailableError } from "../models/errors";
 import { RemoteProduct } from "../models/types";
 import { StatusCode } from "../models/enums";
 import { env } from "../config/env";
@@ -32,26 +32,42 @@ class ProductClient {
         return data as RemoteProduct;
     }
 
-    // this is for single product
-    public async getProductById(productId: string): Promise<RemoteProduct> {
-        this.validateId(productId);
-        let response: any;
-        try {
-            response = await fetch(`${this.productServiceBaseUrl}/products/${productId}`);
+    private async fetchWithTimeout(url: string, init: RequestInit = {}, ms = 5000): Promise<Response> {
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), ms);
 
-        } catch {
-            throw new BadRequestError(`product-service is unreachable`);
+        try { return await fetch(url, { ...init, signal: controller.signal }); }
+        finally { clearTimeout(id); }
+    }
+
+    // this is for single product
+    public async getProductById(productId: string, token?: string): Promise<RemoteProduct> {
+        this.validateId(productId);
+        const init: RequestInit = token ? { headers: { Authorization: token } } : {};
+        let response: Response;
+        try {
+            response = await this.fetchWithTimeout(`${this.productServiceBaseUrl}/products/${productId}`, init);
+
+        } catch (err) {
+           throw Object.assign(
+                new ServiceUnavailableError("Dependency unavailable: product-service"),
+                {
+                    service: "receipt-service",
+                    dependency: "product-service",
+                    details: err instanceof Error ? err.message : String(err)
+                }
+            );
         }
         return this.handleResponse(response, productId);
     }
 
     // this is for multiple products
-    public async getProductsByIdArr(productIds: string[]): Promise<RemoteProduct[]> {
+    public async getProductsByIdArr(productIds: string[], token?: string): Promise<RemoteProduct[]> {
         const results: RemoteProduct[] = [];
 
         for (const id of productIds) {
             try {
-                const product = await this.getProductById(id);
+                const product = await this.getProductById(id, token);
                 results.push(product);
             } catch (err) {
                 if (err instanceof NotFoundError) {

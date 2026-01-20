@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { StatusCode } from "../models/enums";
 import { CreateOrderDto, Order } from "../models/types";
 import { orderService } from "../services/order-service";
+import { ServiceUnavailableError } from "../models/errors";
 
 class OrdersController {
 

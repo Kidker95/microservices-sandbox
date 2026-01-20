@@ -23,7 +23,7 @@ class ApiClient {
             return {
                 fortune: data.quote,
                 author: data.author,
-                source: "dummyjson",
+                source: "dummyJson",
                 fetchedAt: new Date().toISOString()
             };
         } catch { return this.fallback; }
@@ -40,7 +40,7 @@ class ApiClient {
             return data.quotes.map(q => ({
                 fortune: q.quote,
                 author: q.author,
-                source: "dummyjson",
+                source: "dummyJson",
                 fetchedAt: new Date().toISOString()
             }));
         } catch { return [this.fallback]; }
