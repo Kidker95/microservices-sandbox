@@ -18,21 +18,21 @@ class AuthClient {
     public async verifyToken(token: string): Promise<AuthContext> {
         if (!token) throw new UnauthorizedError("Missing token");
 
-         let response: Response;
+        let response: Response;
         try {
             response = await this.fetchWithTimeout(`${this.authServiceBaseUrl}/api/auth/verify`, {
                 method: "GET",
-                headers: { Authorization: `Bearer ${token}` }   
+                headers: { Authorization: `Bearer ${token}` }
             }, 5000);
         } catch (err) {
             throw Object.assign(
-            new ServiceUnavailableError("Dependency unavailable: auth-service"),
-            {
-                service: "user-service",
-                dependency: "auth-service",
-                details: err instanceof Error ? err.message : String(err)
-            }
-        );
+                new ServiceUnavailableError("Dependency unavailable: auth-service"),
+                {
+                    service: "user-service",
+                    dependency: "auth-service",
+                    details: err instanceof Error ? err.message : String(err)
+                }
+            );
         }
 
         let data: any = null;
