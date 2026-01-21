@@ -29,3 +29,9 @@ export class NotFoundError extends ClientError {
         super(StatusCode.NotFound, message);
     }
 }
+
+export class ServiceUnavailableError extends ClientError {
+    public constructor(message: string) {
+        super(StatusCode.ServiceUnavailable, message);
+    }
+}

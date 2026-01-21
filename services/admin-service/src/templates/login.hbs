@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Login</title>
+  <style>{{{css}}}</style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>Admin Panel</h1>
+      <div class="meta">
+        <div class="muted">Sign in to view the dashboard</div>
+      </div>
+    </header>
+
+    <div class="card login-card">
+      <h2 class="login-title">Login</h2>
+
+      {{#if error}}
+        <div class="alert">{{error}}</div>
+      {{/if}}
+
+      <form class="form" method="POST" action="/api/admin/login">
+        <input type="hidden" name="next" value="{{next}}" />
+
+        <label class="label" for="email">Email</label>
+        <input class="input" id="email" name="email" type="email" autocomplete="username" required value="{{email}}" />
+
+        <label class="label" for="password">Password</label>
+        <input class="input" id="password" name="password" type="password" autocomplete="current-password" required />
+
+        <button class="button" type="submit">Sign in</button>
+      </form>
+
+      <div class="hint muted mono">Tip: this sets an httpOnly cookie called <strong>admin_token</strong>.</div>
+    </div>
+  </div>
+</body>
+</html>

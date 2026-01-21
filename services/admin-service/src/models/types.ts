@@ -1,3 +1,4 @@
+import { Service } from './../../node_modules/ts-node/dist/index.d';
 import { ServiceName, UserRole } from "./enums";
 
 export type BasicService = {
@@ -25,6 +26,12 @@ export interface DashboardViewModel {
         down: number;
     };
 }
+
+export type LoginViewModel = {
+    error?: string;
+    email?: string;
+    next?: string;
+};
 
 export type AuthContext = {
     userId: string;
