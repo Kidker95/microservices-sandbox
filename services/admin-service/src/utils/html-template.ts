@@ -1,14 +1,14 @@
 import fs from "fs";
-import path from "path";
 import Handlebars from "handlebars";
-import { DashboardViewModel } from "../models/types";
+import path from "path";
+import { DashboardViewModel, LoginViewModel } from "../models/types";
 
 
 
 class HtmlTemplate {
 
     private registerHelpers(): void {
-        // dateTime formated
+        // dateTime formatted
         Handlebars.registerHelper("formatTime", (iso: string) => {
             if (!iso) return "";
             const date = new Date(iso);
@@ -58,15 +58,28 @@ class HtmlTemplate {
 
     public renderAdminPanel(view: DashboardViewModel): string {
         this.registerHelpers();
-        const templateSoucre = this.loadTemplate("admin.hbs");
+        const templateSource = this.loadTemplate("admin.hbs");
         const sharedCss = this.loadSharedCss();
         const serviceCss = this.loadTemplate("admin.css");
         const css = `${sharedCss}\n\n${serviceCss}`;
 
-        const template = Handlebars.compile(templateSoucre);
+        const template = Handlebars.compile(templateSource);
 
         return template({ ...view, css });
     }
+
+    public renderLoginPage(view: LoginViewModel): string {
+        this.registerHelpers();
+
+        const templateSource = this.loadTemplate("login.hbs");
+        const sharedCss = this.loadSharedCss();
+        const serviceCss = this.loadTemplate("login.css");
+        const css = `${sharedCss}\n\n${serviceCss}`;
+
+        const template = Handlebars.compile(templateSource);
+        return template({ ...view, css });
+    }
+
 }
 
 export const htmlTemplate = new HtmlTemplate();

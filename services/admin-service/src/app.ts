@@ -2,6 +2,7 @@ import express, { Express, Request, Response } from "express";
 import { env } from "./config/env";
 import { errorMiddleware } from "./middleware/error-middleware";
 import adminRouter from "./routes/admin-routes"
+import cookieParser from "cookie-parser";
 
 
 export class App{
@@ -16,6 +17,8 @@ export class App{
     }
     private registerInfra(): void {
         this.server.use(express.json());
+        this.server.use(cookieParser());
+        this.server.use(express.urlencoded({ extended: true }));
     }
 
     private registerRoutes(): void {

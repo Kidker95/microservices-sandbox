@@ -134,3 +134,34 @@ th {
     background: rgba(255, 255, 255, 0.06);
     border: 1px solid rgba(255, 255, 255, 0.12);
 }
+
+.logout-form {
+    display: inline;
+    margin-left: 8px;
+}
+
+.pill-ghost {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    cursor: pointer;
+    color: white
+}
+
+.pill-ghost:hover {
+    border-color: rgba(255, 255, 255, 0.35);
+}
+
+.logout-form {
+    display: inline;
+    margin-left: 8px;
+}
+
+.pill-ghost {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    cursor: pointer;
+}
+
+.pill-ghost:hover {
+    border-color: rgba(255, 255, 255, 0.35);
+}

@@ -8,9 +8,10 @@ class SecurityMiddleware {
     public async verifyLoggedIn(req: Request, _res: Response, next: NextFunction) {
         try {
             const authHeader = req.headers.authorization || "";
-            const token = authHeader.startsWith("Bearer ")
-                ? authHeader.slice(7).trim()
-                : "";
+            let token = authHeader.startsWith("Bearer ") ?
+                authHeader.slice(7).trim() : "";
+
+            if (!token) token = (req as any).cookies?.admin_token || "";
 
             if (!token) throw new UnauthorizedError("Missing token");
 
