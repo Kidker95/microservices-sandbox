@@ -8,7 +8,7 @@ class Env {
 
     public readonly hashingSalt: string = process.env.HASHING_SALT || "tLaSgNiHsAh";
     public readonly passwordPepper: string = process.env.PASSWORD_PEPPER || "rEpPePdRoWsSaP";
-    public readonly jwtSecret: string = process.env.JWTSECRET || "tErCeStwJ";
+    public readonly jwtSecret: string = process.env.JWT_SECRET || "tErCeStwJ";
 
     public readonly bcryptSaltRounds: number = Number(process.env.BCRYPT_SALT_ROUNDS) || 10;
 

@@ -51,10 +51,7 @@ class HtmlTemplate {
         return fs.readFileSync(fullPath, "utf-8");
     }
 
-    private loadSharedCss(): string {
-        const sharedPath = path.join(process.cwd(), "..", "..", "infra", "shared", "shared.css");
-        return fs.readFileSync(sharedPath, "utf-8");
-    }
+    private loadSharedCss(): string { return this.loadTemplate("shared.css"); }
 
     public renderAdminPanel(view: DashboardViewModel): string {
         this.registerHelpers();
