@@ -53,10 +53,11 @@ class ProductClient {
     public async getProductById(_id: string, token?: string): Promise<RemoteProduct> {
         this.validateId(_id);
 
-        const init: RequestInit = token ? { headers: { Authorization: token } } : {};
+        const url = `${this.baseUrl}/products/${_id}`;
+        const init: RequestInit = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
         let response: Response;
 
-        try { response = await this.fetchWithTimeout(`${this.baseUrl}/products/${_id}`, init, 5000); }
+        try {response = await this.fetchWithTimeout(url, init, 5000);}
         catch (err) { this.throwUnavailable(err); }
 
         return this.handleResponse(response, _id);
@@ -71,7 +72,7 @@ class ProductClient {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
-                    ...(token ? { Authorization: token } : {})
+                    ...(token ? { Authorization: `Bearer ${token}` } : {})
                 },
                 body: JSON.stringify({ delta })
             }, 5000);

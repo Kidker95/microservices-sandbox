@@ -75,7 +75,9 @@ async function postJsonAuth<T>(url: string, token: string, body: unknown): Promi
 
     if (!res.ok) {
         const message = data?.error || `${res.status} ${res.statusText}`;
-        throw new Error(`POST ${url} failed: ${message}`);
+        const details = data?.details ? ` (details: ${data.details})` : '';
+        const dependency = data?.dependency ? ` (dependency: ${data.dependency})` : '';
+        throw new Error(`POST ${url} failed: ${message}${details}${dependency}`);
     }
 
     return data as T;
@@ -250,10 +252,59 @@ async function main(): Promise<void> {
     line();
 
     console.log("Logging in as root admin...");
-    const login = await postJson<{ token: string }>(`${services.auth}/api/auth/login`, {
-        email: ROOT_ADMIN_EMAIL,
-        password: ROOT_ADMIN_PASSWORD
-    });
+    let login: { token: string };
+    try {
+        login = await postJson<{ token: string }>(`${services.auth}/api/auth/login`, {
+            email: ROOT_ADMIN_EMAIL,
+            password: ROOT_ADMIN_PASSWORD
+        });
+    } catch (err: any) {
+        // If login fails, create the root admin user first
+        console.log("Root admin not found or invalid credentials. Creating root admin...");
+        
+        // Check if user exists
+        let rootAdminUser: any;
+        try {
+            const userRes = await fetchWithTimeout(`${services.users}/api/users/by-email/${encodeURIComponent(ROOT_ADMIN_EMAIL)}`, { method: "GET" });
+            if (userRes.ok) {
+                rootAdminUser = await readJsonSafe(userRes);
+            }
+        } catch {
+            // User doesn't exist, create it
+        }
+        
+        if (!rootAdminUser) {
+            // Create root admin user
+            rootAdminUser = await postJson<any>(`${services.users}/api/users`, {
+                email: ROOT_ADMIN_EMAIL,
+                name: "Root Admin",
+                role: "Admin",
+                address: {
+                    fullName: "Root Admin",
+                    street: "1 Admin Street",
+                    country: "Israel",
+                    zipCode: "00000",
+                    phone: "000-0000000"
+                }
+            });
+            console.log("✅ Created root admin user");
+        }
+        
+        // Register credentials for root admin
+        await postJson(`${services.auth}/api/auth/register`, {
+            email: ROOT_ADMIN_EMAIL,
+            password: ROOT_ADMIN_PASSWORD,
+            userId: rootAdminUser._id
+        });
+        console.log("✅ Created root admin credentials");
+        
+        // Try login again
+        login = await postJson<{ token: string }>(`${services.auth}/api/auth/login`, {
+            email: ROOT_ADMIN_EMAIL,
+            password: ROOT_ADMIN_PASSWORD
+        });
+    }
+    
     const adminToken = login.token;
     if (!adminToken) throw new Error("Root admin login failed: missing token");
 
