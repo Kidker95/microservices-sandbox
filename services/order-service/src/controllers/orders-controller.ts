@@ -2,7 +2,6 @@ import { NextFunction, Request, Response } from "express";
 import { StatusCode } from "../models/enums";
 import { CreateOrderDto, Order } from "../models/types";
 import { orderService } from "../services/order-service";
-import { ServiceUnavailableError } from "../models/errors";
 
 class OrdersController {
 
@@ -22,7 +21,7 @@ class OrdersController {
 
     public async getOrderById(req: Request, res: Response, next: NextFunction) {
         try {
-            const _id = req.params._id;
+            const _id = req.params._id as string;
             if (!_id) return res.status(StatusCode.BadRequest).json({ error: "missing order _id" });
 
             const order = await orderService.getOrderById(_id);
@@ -33,7 +32,8 @@ class OrdersController {
     public async addOrder(req: Request, res: Response, next: NextFunction) {
         try {
             const auth = (req as any).user;
-            const token = req.headers.authorization;
+            const authHeader = req.headers.authorization || "";
+            const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : authHeader;
             const orderPayload = req.body as CreateOrderDto;
             orderPayload.userId = auth.userId;
             const dbOrder = await orderService.addOrder(orderPayload, token);
@@ -43,7 +43,7 @@ class OrdersController {
 
     public async updateOrder(req: Request, res: Response, next: NextFunction) {
         try {
-            const _id = req.params._id;
+            const _id = req.params._id as string;
             if (!_id) return res.status(StatusCode.BadRequest).json({ error: "missing order _id" });
 
             const updatedOrderData = req.body as Partial<Omit<Order, "_id" | "createdAt" | "updatedAt">>;
@@ -55,7 +55,7 @@ class OrdersController {
 
     public async deleteOrder(req: Request, res: Response, next: NextFunction) {
         try {
-            const _id = req.params._id;
+            const _id = req.params._id as string;
             if (!_id) return res.status(StatusCode.BadRequest).json({ error: "missing order _id" });
 
             await orderService.deleteOrder(_id);
@@ -77,14 +77,14 @@ class OrdersController {
             if (!orderId || !userId) return res.status(StatusCode.BadRequest).json({ error: "Missing orderId or userId" });
 
 
-            const result = await orderService.getOrderWithUser(orderId, userId);
+            const result = await orderService.getOrderWithUser(orderId as string, userId as string);
             return res.json(result);
         } catch (err) { next(err); }
     }
 
     public async getProductById(req: Request, res: Response, next: NextFunction) {
         try {
-            const _id = req.params._id;
+            const _id = req.params._id as string;
             if (!_id) return res.status(StatusCode.BadRequest).json({ error: "missing product _id" });
             const product = await orderService.getProductById(_id);
             return product ? res.json(product) : res.status(StatusCode.NotFound).json({ error: `product not found` });

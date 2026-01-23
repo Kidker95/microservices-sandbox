@@ -40,7 +40,6 @@ class OrderService {
         let subtotal = 0;
 
         for (const item of order.items) {
-
             const product = await productClient.getProductById(item.productId, token);
 
             if (!product.isActive) throw new BadRequestError(`product ${product.name} is inactive`);
