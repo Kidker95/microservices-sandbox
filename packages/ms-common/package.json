@@ -6,6 +6,48 @@
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "files": ["dist"],
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./enums": {
+        "types": "./dist/enums/index.d.ts",
+        "default": "./dist/enums/index.js"
+      },
+      "./errors": {
+        "types": "./dist/errors/index.d.ts",
+        "default": "./dist/errors/index.js"
+      },
+      "./types": {
+        "types": "./dist/types/index.d.ts",
+        "default": "./dist/types/index.js"
+      },
+      "./http": {
+        "types": "./dist/http/index.d.ts",
+        "default": "./dist/http/index.js"
+      },
+      "./clients": {
+        "types": "./dist/clients/index.d.ts",
+        "default": "./dist/clients/index.js"
+      },
+      "./middleware": {
+        "types": "./dist/middleware/index.d.ts",
+        "default": "./dist/middleware/index.js"
+      },
+      "./dal": {
+        "types": "./dist/dal/index.d.ts",
+        "default": "./dist/dal/index.js"
+      },
+      "./config": {
+        "types": "./dist/config/index.d.ts",
+        "default": "./dist/config/index.js"
+      },
+      "./app": {
+        "types": "./dist/app/index.d.ts",
+        "default": "./dist/app/index.js"
+      }
+    },
     "scripts": {
       "build": "tsc -p tsconfig.json",
       "clean": "rm -rf dist"

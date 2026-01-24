@@ -1,7 +1,7 @@
 import { BadRequestError } from "./errors";
 
 type HasValidateSync = {
-    validateSync: () => { message?: string } | undefined;
+    validateSync: (...args: any[]) => { message?: string } | null;
 };
 
 export function throwIfMongooseValidationError(doc: HasValidateSync): void {
