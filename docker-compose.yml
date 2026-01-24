@@ -59,8 +59,8 @@ services:
     environment:
       MONGO_CONNECTION_STRING: mongodb://mongo:27017/orders
       AUTH_SERVICE_BASE_URL: http://auth-service:4007
-      USER_SERVICE_BASE_URL: http://user-service:4001
-      PRODUCT_SERVICE_BASE_URL: http://product-service:4003
+      USER_SERVICE_BASE_URL: http://user-service:4001/api
+      PRODUCT_SERVICE_BASE_URL: http://product-service:4003/api
     depends_on:
       - mongo
       - auth-service
@@ -76,10 +76,10 @@ services:
       - ./services/receipt-service/.env
     environment:
       AUTH_SERVICE_BASE_URL: http://auth-service:4007
-      ORDER_SERVICE_BASE_URL: http://order-service:4002
-      USER_SERVICE_BASE_URL: http://user-service:4001
-      PRODUCT_SERVICE_BASE_URL: http://product-service:4003
-      FORTUNE_SERVICE_BASE_URL: http://fortune-service:4006
+      ORDER_SERVICE_BASE_URL: http://order-service:4002/api
+      USER_SERVICE_BASE_URL: http://user-service:4001/api
+      PRODUCT_SERVICE_BASE_URL: http://product-service:4003/api
+      FORTUNE_SERVICE_BASE_URL: http://fortune-service:4006/api
     depends_on:
       - auth-service
       - order-service
