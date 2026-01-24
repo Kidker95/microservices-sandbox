@@ -1,12 +1,5 @@
-import { Currency, OrderStatus, Size, UserRole } from "./enums";
-
-export type Address = {
-    fullName: string;
-    street: string;
-    country: string;
-    zipCode: string;
-    phone?: string
-}
+import { Currency, OrderStatus, Size } from "@ms/common/enums";
+import { Address } from "@ms/common/types";
 
 export type OrderItem = {
     productId: string;
@@ -18,7 +11,6 @@ export type OrderItem = {
     unitPrice: number;
     currency: Currency;
 }
-
 
 export type Order = {
     _id: string;
@@ -33,25 +25,6 @@ export type Order = {
     updatedAt: Date;
 }
 
-export type RemoteUser = {
-    _id: string,
-    email: string,
-    name: string,
-    address: Address,
-    role: string
-}
-
-export type RemoteProduct = {
-    _id: string;
-    sku: string;
-    name: string;
-    price: number;
-    currency: Currency;
-    stock: number;
-    isActive: boolean;
-    
-}
-
 export type CreateOrderItemDto = {
     productId: string;
     quantity: number;
@@ -63,9 +36,4 @@ export type CreateOrderDto = {
     userId: string;
     items: CreateOrderItemDto[];
     shippingAddress: Address;
-};
-
-export type AuthContext = {
-    userId: string;
-    role: UserRole;
 };

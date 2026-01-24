@@ -1,31 +1,27 @@
-import mongoose from "mongoose";
-import { userClient } from "../clients/user-client";
-import { BadRequestError, NotFoundError } from "../models/errors";
-import { OrderDocument, OrderModel } from "../models/order-model";
-import { CreateOrderDto, Order, OrderItem, RemoteProduct, RemoteUser } from "../models/types";
+import { OrderStatus } from "@ms/common/enums";
+import { BadRequestError, NotFoundError, throwIfMongooseValidationError } from "@ms/common/errors";
+import { assertMongoObjectId } from '@ms/common/http';
+import { RemoteProduct, RemoteUser } from "@ms/common/types";
 import { productClient } from "../clients/product-client";
-import { OrderStatus } from "../models/enums";
+import { userClient } from "../clients/user-client";
+import { OrderDocument, OrderModel } from "../models/order-model";
+import { CreateOrderDto, Order, OrderItem } from "../models/types";
 
 class OrderService {
-
-    private validateId(_id: string): void {
-        const isValid = mongoose.isValidObjectId(_id);
-        if (!isValid) throw new BadRequestError(`_id ${_id} is invalid`);
-    }
 
     // CRUDs and GETs
 
     public async getAllOrders(): Promise<OrderDocument[]> { return await OrderModel.find().exec(); }
 
     public async getMyOrders(userId: string): Promise<OrderDocument[]> {
-        this.validateId(userId);
+        assertMongoObjectId(userId, "userId");
         const orders = await OrderModel.find({ userId }).sort({ createdAt: -1 }).exec();
         return orders;
 
     }
 
     public async getOrderById(_id: string): Promise<OrderDocument> {
-        this.validateId(_id);
+        assertMongoObjectId(_id, "_id");
 
         const order = await OrderModel.findById(_id).exec();
         if (!order) throw new NotFoundError(`Order with _id ${_id} was not found`);
@@ -73,7 +69,7 @@ class OrderService {
             shippingAddress: order.shippingAddress
         });
 
-        BadRequestError.validateSync(orderDoc);
+        throwIfMongooseValidationError(orderDoc);
         await orderDoc.save();
         for (const item of order.items) await productClient.adjustStock(item.productId, -item.quantity, token);
 
@@ -82,7 +78,7 @@ class OrderService {
 
 
     public async updateOrder(_id: string, order: Partial<Omit<Order, "_id" | "createdAt" | "updatedAt">>): Promise<OrderDocument> {
-        this.validateId(_id);
+        assertMongoObjectId(_id, "_id");
 
         const updatedOrder = await OrderModel.findByIdAndUpdate(_id, order, { new: true, runValidators: true }).exec();
 
@@ -91,7 +87,7 @@ class OrderService {
     }
 
     public async deleteOrder(_id: string): Promise<void> {
-        this.validateId(_id);
+        assertMongoObjectId(_id, "_id");
         const deleted = await OrderModel.findByIdAndDelete(_id);
         if (!deleted) throw new NotFoundError(`Order with id ${_id} not found`);
 
@@ -106,8 +102,8 @@ class OrderService {
     // talk to user-service
 
     public async getOrderWithUser(orderId: string, userId: string): Promise<{ order: OrderDocument; user: RemoteUser }> {
-        this.validateId(userId);
-        this.validateId(orderId);
+        assertMongoObjectId(userId, "userId");
+        assertMongoObjectId(orderId, "orderId");
 
         const order = await this.getOrderById(orderId);
         const user = await userClient.getUserById(userId);
@@ -118,7 +114,7 @@ class OrderService {
     // talk to product-service
 
     public async getProductById(_id: string): Promise<RemoteProduct> {
-        this.validateId(_id);
+        assertMongoObjectId(_id, "_id");
         const product = await productClient.getProductById(_id);
         if (!product.isActive) throw new Error(`product ${product.name} is inactive`);
         return product;
