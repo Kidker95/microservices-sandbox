@@ -1,7 +1,8 @@
+import { UserRole } from "@ms/common/enums";
+import { ForbiddenError, UnauthorizedError } from "@ms/common/errors";
 import { NextFunction, Request, Response } from "express";
-import { ForbiddenError, UnauthorizedError } from "../models/errors";
-import { UserRole } from "../models/enums";
 import { authService } from "../services/auth-service";
+
 
 class SecurityMiddleware {
 
@@ -14,7 +15,7 @@ class SecurityMiddleware {
 
             if (!token) throw new UnauthorizedError("Missing token");
 
-            const authContext = authService.verifyToken(token);
+            const authContext = await authService.verifyToken(token);
 
             (req as any).user = authContext;
 

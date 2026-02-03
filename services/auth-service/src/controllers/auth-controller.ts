@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-import { StatusCode } from "../models/enums";
-import { ForbiddenError } from "../models/errors";
+import { StatusCode } from "@ms/common/enums"
+import { ForbiddenError } from "@ms/common/errors";
 import { CredentialsInput, RegisterInput } from "../models/types";
 import { authService } from "../services/auth-service";
 import { env } from "../config/env";
@@ -39,7 +39,7 @@ class AuthController {
             }
 
             const token = await authService.login(credentials);
-            return res.status(StatusCode.OK).json({ token });
+            return res.status(StatusCode.Ok).json({ token });
         }
         catch (err) { next(err); }
     }
@@ -47,18 +47,20 @@ class AuthController {
     public async logout(req: Request, res: Response, next: NextFunction) {
         try {
             await authService.logout();
-            return res.status(StatusCode.OK).json({ ok: true });
+            return res.status(StatusCode.Ok).json({ ok: true });
         }
         catch (err) { next(err); }
     }
 
     public async verify(req: Request, res: Response, next: NextFunction) {
-        const authHeader = req.headers.authorization || "";
-        const token = authHeader.startsWith("Bearer ") ? 
-        authHeader.slice(7).trim() : "";
+        try {
+            const authHeader = req.headers.authorization || "";
+            const token = authHeader.startsWith("Bearer ") ?
+                authHeader.slice(7).trim() : "";
 
-        const context = authService.verifyToken(token);
-        return res.status(StatusCode.OK).json(context);
+            const context = await authService.verifyToken(token);
+            return res.status(StatusCode.Ok).json(context);
+        } catch (err) { next(err); }
     }
 
     public async seedWipe(req: Request, res: Response, next: NextFunction) {
@@ -66,7 +68,7 @@ class AuthController {
             if (env.environment === "production") throw new ForbiddenError("Seed wipe is disabled in production");
             if (req.header("x-seed-wipe") !== "true") throw new ForbiddenError("Seed wipe header missing");
             const deleteCount = await authService.deleteAllExceptEmail(env.seedRootAdminEmail);
-            return res.status(StatusCode.OK).json({ deleted: deleteCount });
+            return res.status(StatusCode.Ok).json({ deleted: deleteCount });
         } catch (err) { next(err); }
     }
 

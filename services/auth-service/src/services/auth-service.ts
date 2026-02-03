@@ -1,27 +1,25 @@
-import { BadRequestError, UnauthorizedError } from "../models/errors";
-import { CredentialsModel } from "../models/credentials-model";
-import { AuthContext, CredentialsInput } from "../models/types";
-import { hashing } from "../utils/hashing";
+import { UserRole } from "@ms/common/enums";
+import { BadRequestError, UnauthorizedError } from "@ms/common/errors";
+import { AuthContext } from "@ms/common/types";
 import jwt from "jsonwebtoken";
-import { env } from "../config/env";
 import { userClient } from "../clients/user-client";
-import { UserRole } from "../models/enums";
-import { RegisterInput } from "../models/types";
-
-
-
+import { env } from "../config/env";
+import { CredentialsModel } from "../models/credentials-model";
+import { CredentialsInput, RegisterInput } from "../models/types";
+import { hashing } from "../utils/hashing";
 
 class AuthService {
 
-    public verifyToken(token: string): AuthContext {
+    public async verifyToken(token: string): Promise<AuthContext> {
         if (!token) throw new UnauthorizedError("Missing token");
         try {
             const payload = jwt.verify(token, env.jwtSecret) as any;
 
             const userId = payload?.sub;
             const role = payload?.role as UserRole;
-            if (!userId || !role) throw new UnauthorizedError("Invalid token");
-            return { userId, role };
+            const email = payload?.email as string;
+            if (!userId || !role || !email) throw new UnauthorizedError("Invalid token");
+            return { _id: userId, role, email } as any;
 
         } catch { throw new UnauthorizedError("Invalid token"); }
     }
@@ -62,8 +60,11 @@ class AuthService {
             throw err;
         }
 
-        const token = jwt.sign(
-            { sub: user!._id, role: user!.role },
+        const token = jwt.sign({
+            sub: user!._id,
+            role: user!.role,
+            email: user!.email
+        },
             env.jwtSecret,
             { expiresIn: "1h" }
         );
@@ -85,11 +86,15 @@ class AuthService {
         const user = await userClient.getUserByEmail(credentials.email);
         if (!user) throw new UnauthorizedError("Invalid email or password");
 
-        const token = jwt.sign(
-            { sub: user._id, role: user.role },
+        const token = jwt.sign({
+            sub: user!._id,
+            role: user!.role,
+            email: user!.email
+        },
             env.jwtSecret,
             { expiresIn: "1h" }
         );
+
         return token;
     }
 
@@ -104,7 +109,7 @@ class AuthService {
         return result.deletedCount ?? 0;
     }
 
-    
+
 
 }
 

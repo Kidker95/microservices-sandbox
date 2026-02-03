@@ -35,7 +35,7 @@ class OrdersController {
             const authHeader = req.headers.authorization || "";
             const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : authHeader;
             const orderPayload = req.body as CreateOrderDto;
-            orderPayload.userId = auth.userId;
+            orderPayload.userId = auth._id;
             const dbOrder = await orderService.addOrder(orderPayload, token);
             return res.status(StatusCode.Created).json(dbOrder);
         } catch (err) { next(err); }
