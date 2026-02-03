@@ -46,6 +46,10 @@
       "./app": {
         "types": "./dist/app/index.d.ts",
         "default": "./dist/app/index.js"
+      },
+      "./helpers": {
+        "types": "./dist/helpers/index.d.ts",
+        "default": "./dist/helpers/index.js"
       }
     },
     "scripts": {

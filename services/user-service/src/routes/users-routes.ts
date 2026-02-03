@@ -13,7 +13,7 @@ usersRouter.get("/", // get all users
 
     usersRouter.get("/:_id",
         securityMiddleware.verifyLoggedIn.bind(securityMiddleware),
-        securityMiddleware.verifyOwnerOrAdmin((req) => req.params._id!),
+        securityMiddleware.verifyOwnerOrAdmin((req) => req.params._id! as string),
         userController.getUserById.bind(userController));
     
 

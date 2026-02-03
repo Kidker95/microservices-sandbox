@@ -1,8 +1,9 @@
 import mongoose, { Model, Schema, Document } from "mongoose";
-import { Address, User } from "./types";
-import { UserRole } from "./enums";
+import { User } from "./types";
+import { Address } from "@ms/common/types";
+import { UserRole } from "@ms/common/enums";
 
-export interface UserDocument extends Omit<User, "_id">, Document {}
+export interface UserDocument extends Omit<User, "_id">, Document { }
 
 const AddressSchema = new Schema<Address>({
     fullName: { type: String, required: [true, "Missing fullName"], trim: true },
