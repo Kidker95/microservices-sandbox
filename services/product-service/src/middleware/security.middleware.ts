@@ -3,8 +3,9 @@ import { UnauthorizedError, ForbiddenError } from "@ms/common/errors";
 import { AuthClient } from "@ms/common/clients";
 import { UserRole } from "@ms/common/enums";
 import { AuthContext } from "@ms/common/types";
+import { env } from "../config/env";
 
-const baseUrl = process.env.AUTH_SERVICE_BASE_URL;
+const baseUrl = env.authServiceBaseUrl;
 if (!baseUrl) throw new Error("Missing AUTH_SERVICE_BASE_URL");
 
 const authClient = new AuthClient(baseUrl);

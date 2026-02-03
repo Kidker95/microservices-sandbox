@@ -1,10 +1,11 @@
 export enum ServiceName {
-    AuthService = "auth-service",
     UserService = "user-service",
-    ProductService = "product-service",
     OrderService = "order-service",
+    ProductService = "product-service",
     ReceiptService = "receipt-service",
+    FortuneService = "fortune-service",
+    AuthService = "auth-service",
     AdminService = "admin-service",
-    FortuneService = "fortune-service"
+    Nginx = "nginx"
   }
   

@@ -1,6 +1,7 @@
+import { ServiceName } from "@ms/common/enums";
+import {  ServiceStatus } from "@ms/common/types";
 import { env } from "../config/env";
-import { ServiceName } from "../models/enums";
-import { BasicService, ServiceStatus } from "../models/types";
+import { BasicService } from "../models/types";
 
 class HealthClient {
 
