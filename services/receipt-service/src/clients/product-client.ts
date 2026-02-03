@@ -1,18 +1,12 @@
-import mongoose from "mongoose";
-
-import { BadRequestError, NotFoundError, ServiceUnavailableError } from "../models/errors";
-import { RemoteProduct } from "../models/types";
-import { StatusCode } from "../models/enums";
+import { StatusCode } from "@ms/common/enums";
+import { BadRequestError, NotFoundError, ServiceUnavailableError } from "@ms/common/errors";
+import { assertMongoObjectId, fetchWithTimeout } from "@ms/common/http";
+import { RemoteProduct } from "@ms/common/types";
 import { env } from "../config/env";
 
 class ProductClient {
 
     private productServiceBaseUrl = env.productServiceBaseUrl;
-
-    private validateId(_id: string): void {
-        const isValid = mongoose.isValidObjectId(_id);
-        if (!isValid) throw new BadRequestError(`_id ${_id} is invalid`);
-    }
 
     private async handleResponse(response: any, _id: string): Promise<RemoteProduct> {
         let data: any = null;
@@ -32,21 +26,13 @@ class ProductClient {
         return data as RemoteProduct;
     }
 
-    private async fetchWithTimeout(url: string, init: RequestInit = {}, ms = 5000): Promise<Response> {
-        const controller = new AbortController();
-        const id = setTimeout(() => controller.abort(), ms);
-
-        try { return await fetch(url, { ...init, signal: controller.signal }); }
-        finally { clearTimeout(id); }
-    }
-
     // this is for single product
     public async getProductById(productId: string, token?: string): Promise<RemoteProduct> {
-        this.validateId(productId);
+        assertMongoObjectId(productId, "productId");
         const init: RequestInit = token ? { headers: { Authorization: token } } : {};
         let response: Response;
         try {
-            response = await this.fetchWithTimeout(`${this.productServiceBaseUrl}/products/${productId}`, init);
+            response = await fetchWithTimeout(`${this.productServiceBaseUrl}/products/${productId}`, init);
 
         } catch (err) {
            throw Object.assign(

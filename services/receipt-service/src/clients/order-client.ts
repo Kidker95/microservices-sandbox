@@ -1,8 +1,9 @@
-import mongoose from "mongoose";
-import { BadRequestError, NotFoundError, ServiceUnavailableError } from "../models/errors";
+import { StatusCode } from "@ms/common/enums";
+import { BadRequestError, NotFoundError, ServiceUnavailableError } from "@ms/common/errors";
+import { RemoteOrder } from "@ms/common/types";
 import { env } from "../config/env";
-import { RemoteOrder } from "../models/types";
-import { StatusCode } from "../models/enums";
+import { assertMongoObjectId, fetchWithTimeout } from "@ms/common/http";
+
 
 class OrderClient {
 
@@ -26,26 +27,14 @@ class OrderClient {
         return data as RemoteOrder;
     }
 
-    private validateId(_id: string): void {
-        const isValid = mongoose.isValidObjectId(_id);
-        if (!isValid) throw new BadRequestError(`_id ${_id} is invalid`);
-    }
-
-    private async fetchWithTimeout(url: string, init: RequestInit = {}, ms = 5000): Promise<Response> {
-        const controller = new AbortController();
-        const id = setTimeout(() => controller.abort(), ms);
-
-
-        try { return await fetch(url, { ...init, signal: controller.signal }); }
-        finally { clearTimeout(id); }
-    }
+    
 
     public async getOrderById(orderId: string, token?: string): Promise<RemoteOrder> {
-        this.validateId(orderId);
+        assertMongoObjectId(orderId, "orderId");
         const init: RequestInit = token ? { headers: { Authorization: token } } : {};
         let response: Response;
         try {
-            response = await this.fetchWithTimeout(`${this.orderServiceBaseUrl}/orders/${orderId}`, init);
+            response = await fetchWithTimeout(`${this.orderServiceBaseUrl}/orders/${orderId}`, init);
         } catch (err) {
             throw Object.assign(
                 new ServiceUnavailableError("Dependency unavailable: order-service"),

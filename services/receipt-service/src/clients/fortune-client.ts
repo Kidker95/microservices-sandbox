@@ -1,5 +1,6 @@
 import { env } from "../config/env";
-import { Fortune } from "../models/types";
+import { Fortune } from "@ms/common/types";
+import { fetchWithTimeout } from "@ms/common";
 
 class FortuneClient {
 
@@ -11,19 +12,13 @@ class FortuneClient {
         fetchedAt: new Date().toISOString()
     }]
 
-    private async fetchWithTimeout(url: string, init: RequestInit = {}, ms = 5000): Promise<Response> {
-        const controller = new AbortController();
-        const id = setTimeout(() => controller.abort(), ms);
-
-        try { return await fetch(url, { ...init, signal: controller.signal }); }
-        finally { clearTimeout(id); }
-    }
+   
 
     public async getFortune(limit?: number): Promise<Fortune[]> {
         try {
             const url = limit ? `${this.fortuneBaseUrl}?limit=${limit}` : this.fortuneBaseUrl;
 
-            const response = await this.fetchWithTimeout(url, {}, 5000);
+            const response = await fetchWithTimeout(url, {}, 5000);
             if (!response.ok) throw new Error(`fortune-service error`);
 
             const data = await response.json();
