@@ -3,7 +3,7 @@ import { ClientError } from "../errors";
 import { StatusCode } from "../enums";
 
 function routeNotFound(req: Request, res: Response): void {
-    res.status(404).json({ error: `Route ${req.originalUrl} not found` });
+    res.status(StatusCode.NotFound).json({ error: `Route ${req.originalUrl} not found` });
 }
 
 function catchAll(err: unknown, req: Request, res: Response, next: NextFunction): void {
