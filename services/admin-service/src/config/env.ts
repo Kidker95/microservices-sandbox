@@ -1,17 +1,18 @@
 import dotenv from "dotenv";
 dotenv.config({ quiet: true });
+import { envHelpers } from "@ms/common/config";
+
 
 class Env {
-    public readonly port: number = Number(process.env.PORT) || 4005;
-    public readonly environment: string = process.env.NODE_ENV || "development";
-
-    public readonly userServiceBaseUrl: string = process.env.USER_SERVICE_BASE_URL || "http://localhost:4001";
-    public readonly orderServiceBaseUrl: string = process.env.ORDER_SERVICE_BASE_URL || "http://localhost:4002";
-    public readonly productServiceBaseUrl: string = process.env.PRODUCT_SERVICE_BASE_URL || "http://localhost:4003";
-    public readonly receiptServiceBaseUrl: string = process.env.RECEIPT_SERVICE_BASE_URL || "http://localhost:4004";
-    public readonly fortuneServiceBaseUrl: string = process.env.FORTUNE_SERVICE_BASE_URL || "http://localhost:4006";
-    public readonly authServiceBaseUrl: string = process.env.AUTH_SERVICE_BASE_URL || "http://localhost:4007";
-    public readonly nginxHealthUrl: string = process.env.NGINX_HEALTH_URL || "http://localhost:8080";
+    public readonly port: number = envHelpers.getNumberEnv("PORT", 4005)!;
+    public readonly environment: string = envHelpers.getEnv("NODE_ENV", "development")!;
+    public readonly userServiceBaseUrl: string = envHelpers.requireUrlEnv("USER_SERVICE_BASE_URL");
+    public readonly orderServiceBaseUrl: string = envHelpers.requireUrlEnv("ORDER_SERVICE_BASE_URL");
+    public readonly productServiceBaseUrl: string = envHelpers.requireUrlEnv("PRODUCT_SERVICE_BASE_URL");
+    public readonly receiptServiceBaseUrl: string = envHelpers.requireUrlEnv("RECEIPT_SERVICE_BASE_URL");
+    public readonly fortuneServiceBaseUrl: string = envHelpers.requireUrlEnv("FORTUNE_SERVICE_BASE_URL");
+    public readonly authServiceBaseUrl: string = envHelpers.requireUrlEnv("AUTH_SERVICE_BASE_URL");
+    public readonly nginxHealthUrl: string = envHelpers.requireUrlEnv("NGINX_HEALTH_URL");
 }
 
 export const env = new Env();
