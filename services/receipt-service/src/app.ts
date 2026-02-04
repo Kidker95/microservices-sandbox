@@ -1,5 +1,5 @@
 import express, { Express, Request, Response } from "express";
-import { errorMiddleware } from "./middleware/error-middleware";
+import { errorMiddleware } from "@ms/common/middleware";
 import receiptRouter from "./routes/receipt-routes";
 import { env } from "./config/env";
 import { pdfBrowser } from "./utils/pdf-browser";
