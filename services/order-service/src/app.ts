@@ -1,7 +1,7 @@
 import express, { Express, Request, Response } from "express";
 import { env } from "./config/env";
 import { ordersRouter } from "./routes/orders-routes";
-import { errorMiddleware } from "./middleware/error-middleware";
+import { errorMiddleware } from "@ms/common/middleware";
 import { dal } from "./dal";
 
 

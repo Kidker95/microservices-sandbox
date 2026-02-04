@@ -1,5 +1,5 @@
 import express, { Express, Request, Response } from "express";
-import { errorMiddleware } from "./middleware/error-middleware";
+import { errorMiddleware } from "@ms/common/middleware";
 import { env } from "./config/env";
 import { dal } from "./dal";
 import { productRouter } from "./routes/product-routes";
