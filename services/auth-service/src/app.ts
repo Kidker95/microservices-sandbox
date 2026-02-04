@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import express, { Express, Request, Response } from "express";
 import { env } from "./config/env";
 import { dal } from "./dal";
-import { errorMiddleware } from "./middleware/error-middleware";
+import { errorMiddleware } from "@ms/common/middleware";
 import { authRouter } from "./routes/auth-routes";
 
 
