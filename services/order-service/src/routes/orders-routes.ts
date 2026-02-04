@@ -1,7 +1,13 @@
-import express from "express";
-import { ordersController } from "../controllers/orders-controller";
+import { AuthClient } from "@ms/common/clients";
 import { securityMiddleware } from "@ms/common/middleware";
+import express from "express";
+import { env } from "../config/env";
+import { ordersController } from "../controllers/orders-controller";
 import { orderService } from "../services/order-service";
+
+const authClient = new AuthClient(env.authServiceBaseUrl);
+const verifyToken = securityMiddleware.createVerifyToken(authClient);
+
 
 
 export const ordersRouter = express.Router();
@@ -9,21 +15,21 @@ export const ordersRouter = express.Router();
 
 // GET
 ordersRouter.get("/", //get all orders
-    securityMiddleware.verifyLoggedIn,
+    verifyToken,
     securityMiddleware.verifyAdmin,
     ordersController.getAllOrders.bind(ordersController));
 
 ordersRouter.get("/me",
-    securityMiddleware.verifyLoggedIn,
+    verifyToken,
     ordersController.getMyOrders.bind(ordersController));
 
 ordersRouter.get("/:orderId/user/:userId", //get order with user
-    securityMiddleware.verifyLoggedIn,
+    verifyToken,
     securityMiddleware.verifyAdmin,
     ordersController.getOrderWithUser.bind(ordersController));
 
 ordersRouter.get("/:_id", // get a specific order
-    securityMiddleware.verifyLoggedIn,
+    verifyToken,
     securityMiddleware.createVerifyOwnerOrAdmin(async (req) => {
         const order = await orderService.getOrderById(req.params._id! as string);
         return order.userId;
@@ -36,12 +42,12 @@ ordersRouter.get("/product/:_id", // get a specific product from product-service
 
 // POST
 ordersRouter.post("/", //add an order
-    securityMiddleware.verifyLoggedIn,
+    verifyToken,
     ordersController.addOrder.bind(ordersController));
 
 // PUT
 ordersRouter.put("/:_id", //update order
-    securityMiddleware.verifyLoggedIn,
+    verifyToken,
     securityMiddleware.createVerifyOwnerOrAdmin(async (req) => {
         const order = await orderService.getOrderById(req.params._id! as string);
         return order.userId;
@@ -51,7 +57,7 @@ ordersRouter.put("/:_id", //update order
 // DELETE
 
 ordersRouter.delete("/:_id", // delete a specific order
-    securityMiddleware.verifyLoggedIn,
+    verifyToken,
     securityMiddleware.createVerifyOwnerOrAdmin(async (req) => {
         const order = await orderService.getOrderById(req.params._id! as string);
         return order.userId;
@@ -59,6 +65,6 @@ ordersRouter.delete("/:_id", // delete a specific order
     ordersController.deleteOrder.bind(ordersController));
 
 ordersRouter.delete("/", // delete all orders
-    securityMiddleware.verifyLoggedIn,
+    verifyToken,
     securityMiddleware.verifyAdmin.bind(securityMiddleware),
     ordersController.deleteAll.bind(ordersController));

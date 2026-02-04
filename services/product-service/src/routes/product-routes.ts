@@ -1,6 +1,12 @@
 import express from "express";
 import { productController } from "../controllers/product-controller";
 import { securityMiddleware } from "@ms/common/middleware";
+import { AuthClient } from "@ms/common/clients";
+import { env } from "../config/env";
+const authClient = new AuthClient(env.authServiceBaseUrl);
+const verifyToken = securityMiddleware.createVerifyToken(authClient);
+
+
 
 
 export const productRouter = express.Router();
@@ -16,25 +22,25 @@ productRouter.get("/:_id",productController.getProductById.bind(productControlle
 // POST
 
 productRouter.post("/", // add product
-    securityMiddleware.verifyLoggedIn.bind(securityMiddleware),
+    verifyToken,
     securityMiddleware.verifyAdmin.bind(securityMiddleware),
     productController.addProduct.bind(productController));
 
 // PUT
 
 productRouter.put("/:_id", // update product
-    securityMiddleware.verifyLoggedIn.bind(securityMiddleware),
+    verifyToken,
     securityMiddleware.verifyAdmin.bind(securityMiddleware),
     productController.updateProduct.bind(productController));
 
 // PATCH
 
 productRouter.patch("/:_id/stock", // adjust stock
-    securityMiddleware.verifyLoggedIn.bind(securityMiddleware),
+    verifyToken,
     productController.adjustStock.bind(productController));
 
 productRouter.patch("/:_id/active", // toggle active/inactive
-    securityMiddleware.verifyLoggedIn.bind(securityMiddleware),
+    verifyToken,
     securityMiddleware.verifyAdmin.bind(securityMiddleware),
     productController.adjustActive.bind(productController));
 
@@ -42,11 +48,11 @@ productRouter.patch("/:_id/active", // toggle active/inactive
 // DELETE
 
 productRouter.delete("/:_id", // delete specific
-    securityMiddleware.verifyLoggedIn.bind(securityMiddleware),
+    verifyToken,
     securityMiddleware.verifyAdmin.bind(securityMiddleware),
     productController.deleteProduct.bind(productController));
 
 productRouter.delete("/", //delete all
-    securityMiddleware.verifyLoggedIn.bind(securityMiddleware),
+    verifyToken,
     securityMiddleware.verifyAdmin.bind(securityMiddleware),
     productController.deleteAll.bind(productController));
