@@ -1,7 +1,7 @@
 import { StatusCode } from "@ms/common/enums";
 import { BadRequestError } from "@ms/common/errors";
 import { Request, Response, Router } from "express";
-import { securityMiddleware } from "../middleware/security-middleware";
+import { securityMiddleware } from "@ms/common/middleware";
 import { receiptService } from "../services/receipt-service";
 import { asyncHandler } from "../utils/async-handler";
 

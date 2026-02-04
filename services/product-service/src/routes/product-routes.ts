@@ -1,6 +1,6 @@
 import express from "express";
 import { productController } from "../controllers/product-controller";
-import { securityMiddleware } from "../middleware/security.middleware";
+import { securityMiddleware } from "@ms/common/middleware";
 
 
 export const productRouter = express.Router();

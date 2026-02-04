@@ -1,6 +1,6 @@
 import express from "express";
 import { userController } from "../controllers/user-controller";
-import { securityMiddleware } from "../middleware/security-middleware";
+import { securityMiddleware } from "@ms/common/middleware";
 
 export const usersRouter = express.Router();
 
@@ -13,7 +13,7 @@ usersRouter.get("/", // get all users
 
     usersRouter.get("/:_id",
         securityMiddleware.verifyLoggedIn.bind(securityMiddleware),
-        securityMiddleware.verifyOwnerOrAdmin((req) => req.params._id! as string),
+        securityMiddleware.createVerifyOwnerOrAdmin((req) => req.params._id! as string),
         userController.getUserById.bind(userController));
     
 
