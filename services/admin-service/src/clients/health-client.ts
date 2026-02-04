@@ -2,6 +2,7 @@ import { ServiceName } from "@ms/common/enums";
 import {  ServiceStatus } from "@ms/common/types";
 import { env } from "../config/env";
 import { BasicService } from "../models/types";
+import { fetchWithTimeout } from "@ms/common/http";
 
 class HealthClient {
 
@@ -25,7 +26,7 @@ class HealthClient {
         const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
     
         try {
-            const response = await fetch(`${service.baseUrl}/health`, { signal: controller.signal });
+            const response = await fetchWithTimeout(`${service.baseUrl}/health`, { signal: controller.signal });
             const responseTimeMs = Date.now() - start;
     
             let data: any = null;
@@ -72,7 +73,6 @@ class HealthClient {
         }
     }
     
-
     public async healthCheck(): Promise<ServiceStatus[]> {
         return Promise.all(this.healthRoutes.map(service => this.checkOne(service)));
     }

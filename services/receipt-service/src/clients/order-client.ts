@@ -1,8 +1,8 @@
 import { StatusCode } from "@ms/common/enums";
 import { BadRequestError, NotFoundError, ServiceUnavailableError } from "@ms/common/errors";
+import { assertMongoObjectId, fetchWithTimeout } from "@ms/common/http";
 import { RemoteOrder } from "@ms/common/types";
 import { env } from "../config/env";
-import { assertMongoObjectId, fetchWithTimeout } from "@ms/common/http";
 
 
 class OrderClient {
@@ -26,8 +26,6 @@ class OrderClient {
 
         return data as RemoteOrder;
     }
-
-    
 
     public async getOrderById(orderId: string, token?: string): Promise<RemoteOrder> {
         assertMongoObjectId(orderId, "orderId");

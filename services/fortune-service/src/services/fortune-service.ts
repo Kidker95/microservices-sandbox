@@ -1,5 +1,5 @@
 import { apiClient } from "../clients/api-client";
-import { Fortune } from "../models/types";
+import { Fortune } from "@ms/common/types";
 
 class FortuneService {
 

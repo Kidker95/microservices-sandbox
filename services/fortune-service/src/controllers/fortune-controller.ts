@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { fortuneService } from "../services/fortune-service";
-import { StatusCode } from "../models/enums";
+import { StatusCode } from "@ms/common/enums";
 
 class FortuneController {
 
