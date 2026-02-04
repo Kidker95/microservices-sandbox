@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { userService } from "../services/user-service";
-import { StatusCode } from "../models/enums";
-import { ForbiddenError } from "../models/errors";
+import { StatusCode } from "@ms/common/enums";
+import { ForbiddenError } from "@ms/common/errors";
 import { env } from "../config/env";
 
 
@@ -37,7 +37,7 @@ class UserController {
             const _id = req.params._id;
             if (!_id) return res.status(StatusCode.BadRequest).json({ error: "Missing user _id" });
             const updatedUserData = req.body;
-            const dbUser = await userService.updateUser(_id, updatedUserData);
+            const dbUser = await userService.updateUser(_id as string, updatedUserData);
             return res.json(dbUser);
         } catch (err) { next(err); }
 
@@ -47,7 +47,7 @@ class UserController {
         try {
             const _id = req.params._id;
             if (!_id) return res.status(StatusCode.BadRequest).json({ error: "Missing user _id" });
-            await userService.deleteUser(_id);
+            await userService.deleteUser(_id as string);
             return res.status(StatusCode.NoContent).json({ info: `Deleted successfully` })
         } catch (err) { next(err); }
 
@@ -56,7 +56,7 @@ class UserController {
     public async deleteAll(req: Request, res: Response, next: NextFunction) {
         try {
             const deleteCount = await userService.deleteAll();
-            return res.status(StatusCode.OK).json({deleted: deleteCount})
+            return res.status(StatusCode.Ok).json({deleted: deleteCount})
         } catch (err) { next(err); }
     }
 
@@ -65,7 +65,7 @@ class UserController {
             if (env.environment === "production") throw new ForbiddenError("Seed wipe is disabled in production");
             if (req.header("x-seed-wipe") !== "true") throw new ForbiddenError("Seed wipe header missing");
             const deleteCount = await userService.deleteAllExceptEmail(env.seedRootAdminEmail);
-            return res.status(StatusCode.OK).json({ deleted: deleteCount });
+            return res.status(StatusCode.Ok).json({ deleted: deleteCount });
         } catch (err) { next(err); }
     }
 
@@ -73,9 +73,9 @@ class UserController {
         try {
             const email = req.params.email;
             if(!email) return res.status(StatusCode.BadRequest).json({error: "Missing email"});
-            const user = await userService.getUserByEmail(email);
+            const user = await userService.getUserByEmail(email as string);
             if(!user) return res.status(StatusCode.NotFound).json({error: `User with email ${email} not found`});
-            return res.status(StatusCode.OK).json(user);
+            return res.status(StatusCode.Ok).json(user);
         } catch (err) { next(err); }
     }
 

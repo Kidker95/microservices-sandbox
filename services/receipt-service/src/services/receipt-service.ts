@@ -1,14 +1,13 @@
-import { Fortune, ReceiptResources, ReceiptData, ReceiptView } from "../models/types";
-import { orderClient } from "../clients/order-client";
-import { userClient } from "../clients/user-client";
-import { productClient } from "../clients/product-client";
-import { htmlTemplate } from "../utils/html-template";
-import { chromium } from "playwright";
-import { pdfBrowser } from "../utils/pdf-browser";
+import { UserRole } from "@ms/common/enums";
+import { ForbiddenError } from "@ms/common/errors";
+import { AuthContext, Fortune } from "@ms/common/types";
 import { fortuneClient } from "../clients/fortune-client";
-import { ForbiddenError } from "../models/errors";
-import { UserRole } from "../models/enums";
-import { AuthContext } from "../models/types";
+import { orderClient } from "../clients/order-client";
+import { productClient } from "../clients/product-client";
+import { userClient } from "../clients/user-client";
+import { ReceiptData, ReceiptResources, ReceiptView } from "../models/types";
+import { htmlTemplate } from "../utils/html-template";
+import { pdfBrowser } from "../utils/pdf-browser";
 
 
 
@@ -47,7 +46,7 @@ class ReceiptService {
         const order = await orderClient.getOrderById(orderId, token);
 
         const isAdmin = requester.role === UserRole.Admin;
-        const isOwner = requester.userId === order.userId;
+        const isOwner = requester._id === order.userId;
 
         if (!isAdmin && !isOwner) throw new ForbiddenError("Forbidden");
 

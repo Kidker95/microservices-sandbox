@@ -1,4 +1,4 @@
-import { Currency, Size, UserRole } from "./enums";
+import { Currency, Size } from "@ms/common";
 
 export interface Product {
     _id: string;
@@ -15,7 +15,3 @@ export interface Product {
     updatedAt: Date;
 }
 
-export type AuthContext = {
-    userId: string;
-    role: UserRole;
-};

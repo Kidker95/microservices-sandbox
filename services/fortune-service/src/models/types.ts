@@ -4,13 +4,6 @@ export type UpstreamQuote = {
     author: string;
 };
 
-export type Fortune = {
-    fortune: string;
-    author: string;
-    source: string;
-    fetchedAt: string;
-};
-
 export type UpstreamQuotesList = {
     quotes: UpstreamQuote[];
     total: number;

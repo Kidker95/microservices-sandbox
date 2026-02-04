@@ -25,7 +25,7 @@ ordersRouter.get("/:orderId/user/:userId", //get order with user
 ordersRouter.get("/:_id", // get a specific order
     securityMiddleware.verifyLoggedIn.bind(securityMiddleware),
     securityMiddleware.verifyOwnerOrAdmin(async (req) => {
-        const order = await orderService.getOrderById(req.params._id!);
+        const order = await orderService.getOrderById(req.params._id! as string);
         return order.userId;
     }),
     ordersController.getOrderById.bind(ordersController));
@@ -43,7 +43,7 @@ ordersRouter.post("/", //add an order
 ordersRouter.put("/:_id", //update order
     securityMiddleware.verifyLoggedIn.bind(securityMiddleware),
     securityMiddleware.verifyOwnerOrAdmin(async (req) => {
-        const order = await orderService.getOrderById(req.params._id!);
+        const order = await orderService.getOrderById(req.params._id! as string);
         return order.userId;
     }),
     ordersController.updateOrder.bind(ordersController));
@@ -53,7 +53,7 @@ ordersRouter.put("/:_id", //update order
 ordersRouter.delete("/:_id", // delete a specific order
     securityMiddleware.verifyLoggedIn.bind(securityMiddleware),
     securityMiddleware.verifyOwnerOrAdmin(async (req) => {
-        const order = await orderService.getOrderById(req.params._id!);
+        const order = await orderService.getOrderById(req.params._id! as string);
         return order.userId;
     }),
     ordersController.deleteOrder.bind(ordersController));

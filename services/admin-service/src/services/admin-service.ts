@@ -1,5 +1,6 @@
+import { ServiceStatus } from "@ms/common/types";
 import { healthClient } from "../clients/health-client";
-import { DashboardViewModel, ServiceStatus } from "../models/types";
+import { DashboardViewModel } from "../models/types";
 
 class AdminService {
 

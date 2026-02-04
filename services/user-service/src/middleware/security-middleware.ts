@@ -1,11 +1,23 @@
 import { NextFunction, Request, Response } from "express";
-import { UnauthorizedError, ForbiddenError } from "../models/errors";
-import { authClient } from "../clients/auth-client";
-import { UserRole } from "../models/enums";
+import { UnauthorizedError, ForbiddenError } from "@ms/common/errors";
+import { AuthClient } from "@ms/common/clients";
+import { UserRole } from "@ms/common/enums";
+import { AuthContext } from "@ms/common/types";
+import { env } from "../config/env";
+
+
+const baseUrl = env.authServiceBaseUrl;
+if (!baseUrl) throw new Error("Missing AUTH_SERVICE_BASE_URL");
+
+const authClient = new AuthClient(baseUrl);
+
+interface AuthenticatedRequest extends Request {
+    user?: AuthContext;
+}
 
 class SecurityMiddleware {
 
-    public async verifyLoggedIn(req: Request, _res: Response, next: NextFunction) {
+    public async verifyLoggedIn(req: AuthenticatedRequest, _res: Response, next: NextFunction) {
         try {
             const authHeader = req.headers.authorization || "";
             const token = authHeader.startsWith("Bearer ")
@@ -22,7 +34,7 @@ class SecurityMiddleware {
         } catch (err) { next(err); }
     }
 
-    public async verifyAdmin(req: Request, res: Response, next: NextFunction) {
+    public async verifyAdmin(req: AuthenticatedRequest, res: Response, next: NextFunction) {
         try {
             const user = (req as any).user;
             if (!user) throw new UnauthorizedError("Not logged in");
@@ -32,7 +44,7 @@ class SecurityMiddleware {
     }
 
     public verifyOwnerOrAdmin(getOwnerId: (req: Request) => string | Promise<string>) {
-        return async (req: Request, _res: Response, next: NextFunction) => {
+        return async (req: AuthenticatedRequest, _res: Response, next: NextFunction) => {
             try {
                 const user = (req as any).user;
 

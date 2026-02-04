@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { StatusCode } from "../models/enums";
+import { StatusCode } from "@ms/common/enums";
 import { CreateOrderDto, Order } from "../models/types";
 import { orderService } from "../services/order-service";
 
@@ -35,7 +35,7 @@ class OrdersController {
             const authHeader = req.headers.authorization || "";
             const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : authHeader;
             const orderPayload = req.body as CreateOrderDto;
-            orderPayload.userId = auth.userId;
+            orderPayload.userId = auth._id;
             const dbOrder = await orderService.addOrder(orderPayload, token);
             return res.status(StatusCode.Created).json(dbOrder);
         } catch (err) { next(err); }
@@ -59,7 +59,7 @@ class OrdersController {
             if (!_id) return res.status(StatusCode.BadRequest).json({ error: "missing order _id" });
 
             await orderService.deleteOrder(_id);
-            return res.status(StatusCode.OK).json({ info: `deleted successfully` });
+            return res.status(StatusCode.Ok).json({ info: `deleted successfully` });
 
         } catch (err) { next(err); }
     }
@@ -67,7 +67,7 @@ class OrdersController {
     public async deleteAll(req: Request, res: Response, next: NextFunction) {
         try {
             const deletedCount = await orderService.deleteAll();
-            return res.status(StatusCode.OK).json({ deleted: deletedCount });
+            return res.status(StatusCode.Ok).json({ deleted: deletedCount });
         } catch (err) { next(err); }
     }
 

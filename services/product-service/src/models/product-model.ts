@@ -1,6 +1,6 @@
 import mongoose, { Model, Schema, Document } from "mongoose";
 import { Product } from "./types";
-import { Currency, Size } from "./enums";
+import { Currency, Size } from "@ms/common/enums";
 
 export interface ProductDocument extends Omit<Product, "_id">, Document {}
 

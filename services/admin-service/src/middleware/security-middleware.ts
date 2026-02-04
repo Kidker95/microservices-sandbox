@@ -1,7 +1,12 @@
+import { AuthClient } from "@ms/common/clients";
+import { UserRole } from "@ms/common/enums";
+import { ForbiddenError, UnauthorizedError } from "@ms/common/errors";
 import { NextFunction, Request, Response } from "express";
-import { UnauthorizedError, ForbiddenError } from "../models/errors";
-import { authClient } from "../clients/auth-client";
-import { UserRole } from "../models/enums";
+import { env } from "../config/env";
+
+const baseUrl = env.authServiceBaseUrl;
+if (!baseUrl) throw new Error("Missing AUTH_SERVICE_BASE_URL");
+const authClient = new AuthClient(baseUrl);
 
 class SecurityMiddleware {
 
@@ -43,7 +48,7 @@ class SecurityMiddleware {
                 const ownerId = await Promise.resolve(getOwnerId(req));
                 if (!ownerId) throw new ForbiddenError("Forbidden");
 
-                if (user.userId !== ownerId) throw new ForbiddenError("Forbidden");
+                if (user._id !== ownerId) throw new ForbiddenError("Forbidden");
 
                 next();
             } catch (err) { next(err); }

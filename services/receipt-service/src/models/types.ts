@@ -1,62 +1,4 @@
-import { UserRole } from "./enums";
-
-
-// User-service address shape (duplicated locally on purpose)
-export type RemoteAddress = {
-    fullName: string;
-    street: string;
-    country: string;
-    zipCode: string;
-    phone?: string;
-};
-
-// Minimal user shape we care about for receipts
-export type RemoteUser = {
-    _id: string;
-    email: string;
-    name: string;
-    address: RemoteAddress;
-
-};
-
-// Order-service item shape (mirrors OrderItem)
-export type RemoteOrderItem = {
-    productId: string;
-    sku?: string;
-    name: string;
-    size?: string;      // we don't need full Size enum here
-    color?: string;
-    quantity: number;
-    unitPrice: number;
-    currency: string;   // e.g. "ILS", "USD"
-};
-
-// Order-service main Order shape (what its API returns)
-export type RemoteOrder = {
-    _id: string;
-    userId: string;
-    items: RemoteOrderItem[];
-    status: string;         // mirrors OrderStatus but as plain string
-    subtotal: number;
-    shippingCost: number;
-    total: number;
-    shippingAddress: RemoteAddress;
-    createdAt: string | Date;
-    updatedAt: string | Date;
-};
-
-// Product-service minimal shape we might need for enrichment
-export type RemoteProduct = {
-    _id: string;
-    sku: string;
-    name: string;
-    price: number;
-    currency: string;
-    stock: number;
-    isActive: boolean;
-    // description, sizes, colors etc. exist but not required for basic receipt
-};
-
+import { Fortune, RemoteAddress, RemoteOrder, RemoteProduct, RemoteUser } from "@ms/common";
 
 // =-=-=-=-=-=-=-=-= R E C E I P T   I N T E R N A L   T Y P E S =-=-=-=-=-=-=-=-=
 // These are internal "view models" used by gatherResources() and the
@@ -137,16 +79,7 @@ export type ReceiptView = {
 
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- fortune-client.ts types =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-export type Fortune = {
-    fortune: string;
-    author: string;
-    source: string;
-    fetchedAt: string;
-};
+
 
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- auth-client.ts types =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-export type AuthContext = {
-    userId: string;
-    role: UserRole;
-};

@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { StatusCode } from "../models/enums";
+import { StatusCode } from "@ms/common/enums";
 
 
 class ErrorMiddleware {

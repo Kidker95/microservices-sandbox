@@ -2,16 +2,30 @@ import { Router } from "express";
 import { asyncHandler } from "../utils/async-handler";
 import { Request, Response } from "express";
 import { adminService } from "../services/admin-service";
-import { StatusCode } from "../models/enums";
+import { StatusCode } from "@ms/common/enums";
 import { htmlTemplate } from "../utils/html-template";
 import { securityMiddleware } from "../middleware/security-middleware";
-import { authClient } from "../clients/auth-client";
+import { fetchWithTimeout } from "@ms/common/http";
 import { env } from "../config/env";
 import { LoginViewModel } from "../models/types";
 
 
 
 const router = Router();
+
+async function loginWithAuth(email: string, password: string): Promise<string> {
+    const res = await fetchWithTimeout(`${env.authServiceBaseUrl}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+    });
+
+    const data = await res.json().catch(() => null);
+    if (!res.ok) throw new Error(data?.error || `Login failed: ${res.status} ${res.statusText}`);
+
+    return data.token as string;
+}
+
 
 router.get("/login", asyncHandler(async (req: Request, res: Response) => {
     const error = typeof req.query.error === "string" ? req.query.error : undefined;
@@ -24,7 +38,7 @@ router.get("/login", asyncHandler(async (req: Request, res: Response) => {
     if (next) view.next = next;
 
     const html = htmlTemplate.renderLoginPage(view);
-    res.status(StatusCode.OK).type("html").send(html);
+    res.status(StatusCode.Ok).type("html").send(html);
 }));
 
 router.post("/login", asyncHandler(async (req: Request, res: Response) => {
@@ -33,7 +47,7 @@ router.post("/login", asyncHandler(async (req: Request, res: Response) => {
     const next = String(req.body?.next || "").trim();
 
     try {
-        const token = await authClient.login(email, password);
+        const token = await loginWithAuth(email, password);
 
         res.cookie("admin_token", token, {
             httpOnly: true,
@@ -68,7 +82,7 @@ router.get("/",
     asyncHandler(async (req: Request, res: Response) => {
         const dashboard = await adminService.getDashboard();
         const html = htmlTemplate.renderAdminPanel(dashboard);
-        res.status(StatusCode.OK).type("html").send(html);
+        res.status(StatusCode.Ok).type("html").send(html);
 
     }));
 

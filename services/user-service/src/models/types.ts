@@ -1,15 +1,5 @@
-import { UserRole } from "./enums";
-
-// =-=-=-=-=-=-=-=-= M  O  D  E  L  S =-=-=-=-=-=-=-=-=
-
-
-export type Address = {
-    fullName: string;
-    street: string;
-    country: string;
-    zipCode: string;
-    phone?: string
-}
+import { UserRole } from "@ms/common/enums";
+import {Address} from "@ms/common/types"
 
 export type User = {
     _id: string;
@@ -20,12 +10,3 @@ export type User = {
     createdAt: Date;
     updatedAt: Date;
 }
-
-
-
-// =-=-=-=-=-=-=-=-= A  U  T  H =-=-=-=-=-=-=-=-=
-
-export type AuthContext = {
-    userId: string;
-    role: UserRole;
-};

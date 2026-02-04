@@ -1,5 +1,7 @@
+import { fetchWithTimeout } from '@ms/common/http';
+import { Fortune } from "@ms/common/types";
 import { env } from "../config/env";
-import { Fortune, UpstreamQuote, UpstreamQuotesList } from "../models/types";
+import { UpstreamQuote, UpstreamQuotesList } from "../models/types";
 
 class ApiClient {
     private readonly fortuneApiBaseUrl = env.fortuneApiBaseUrl;
@@ -15,7 +17,7 @@ class ApiClient {
     public async getRandomFortune(): Promise<Fortune> {
         try {
             const url = `${this.fortuneApiBaseUrl}/quotes/random`;
-            const response = await fetch(url);
+            const response = await fetchWithTimeout(url);
             if (!response.ok) throw new Error("Failed to fetch fortune");
 
             const data = await response.json() as UpstreamQuote;
@@ -32,7 +34,7 @@ class ApiClient {
     public async getMultipleFortunes(limit: number = this.limit): Promise<Fortune[]> {
         try {
             const url = `${this.fortuneApiBaseUrl}/quotes?limit=${limit}`;
-            const response = await fetch(url);
+            const response = await fetchWithTimeout(url);
             if (!response.ok) throw new Error("Failed to fetch fortunes");
 
             const data = await response.json() as UpstreamQuotesList;
