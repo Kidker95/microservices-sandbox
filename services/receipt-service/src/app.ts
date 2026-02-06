@@ -1,57 +1,24 @@
-import express, { Express, Request, Response } from "express";
-import { errorMiddleware } from "@ms/common/middleware";
-import receiptRouter from "./routes/receipt-routes";
+import { createServiceApp } from "@ms/common/app";
 import { env } from "./config/env";
+import receiptRouter from "./routes/receipt-routes";
 import { pdfBrowser } from "./utils/pdf-browser";
 
+const { start } = createServiceApp({
+    serviceName: "receipt-service",
+    port: env.port,
+    basePath: "/api/receipts",
+    router: receiptRouter,
+});
 
+const registerShutdown = (): void => {
+    const shutdown = async () => {
+        try { await pdfBrowser.close(); }
+        finally { process.exit(0); }
+    };
 
-export class App {
-    public readonly server: Express;
+    process.on("SIGINT", shutdown);
+    process.on("SIGTERM", shutdown);
+};
 
-    constructor() {
-        this.server = express();
-        this.registerInfra();
-        this.registerRoutes();
-        this.registerErrorHandling();
-
-    }
-
-    private registerInfra(): void {
-        this.server.use(express.json());
-    }
-
-    private registerRoutes(): void {
-        this.server.get("/health", (req: Request, res: Response) => {
-            res.json({ status: "ok", service: "receipt-service", uptimeSeconds: Math.floor(process.uptime()) });
-        });
-        this.server.use("/api/receipts", receiptRouter);
-    }
-
-    private registerErrorHandling(): void {
-        this.server.use(errorMiddleware.routeNotFound);
-        this.server.use(errorMiddleware.catchAll);
-    }
-
-    public start() {
-        process.on("SIGINT", async () => {
-            await pdfBrowser.close();
-            process.exit(0);
-        });
-
-        process.on("SIGTERM", async () => {
-            await pdfBrowser.close();
-            process.exit(0);
-        });
-
-        this.server.listen(env.port, () => {
-            console.log(`Receipt service running on port ${env.port}`);
-        });
-    }
-
-}
-
-export const app = new App();
-
-const bootstrap = async (): Promise<void> => app.start();
-bootstrap();
+registerShutdown();
+start();

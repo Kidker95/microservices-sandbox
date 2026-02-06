@@ -1,47 +1,32 @@
-import express, { Express, Request, Response } from "express";
-import { errorMiddleware } from "@ms/common/middleware";
+import { createServiceApp } from "@ms/common/app";
+import { createMongoDal } from "@ms/common/dal";
 import { env } from "./config/env";
-import { dal } from "./dal";
 import { productRouter } from "./routes/product-routes";
 
-export class App {
-    public readonly server: Express;
+export const dal = createMongoDal({
+    serviceName: "product-service",
+    mongoUri: env.mongoConnectionString,
+});
 
-    constructor() {
-        this.server = express();
-        this.registerInfra();
-        this.registerRoutes();
-        this.registerErrorHandling();
-    }
-
-    private registerInfra(): void {
-        this.server.use(express.json());
-    }
-
-    private registerRoutes(): void {
-        this.server.get("/health", (req: Request, res: Response) => {
-            res.json({ status: "ok", service: "product-service", uptimeSeconds: Math.floor(process.uptime()) });
-        });
-        this.server.use("/api/products", productRouter);
-    }
-
-    private registerErrorHandling(): void {
-        this.server.use(errorMiddleware.routeNotFound);
-        this.server.use(errorMiddleware.catchAll);
-    }
-
-    public start(){
-        this.server.listen(env.port, ()=>{
-            console.log(`Product service running on port ${env.port}`);
-        })
-    }
-}
-
-export const app = new App();
+const { start } = createServiceApp({
+    serviceName: "product-service",
+    port: env.port,
+    basePath: "/api/products",
+    router: productRouter,
+});
 
 const bootstrap = async (): Promise<void> => {
     await dal.connect();
-    app.start();
-}
-bootstrap();
 
+    const shutdown = async () => {
+        try { await dal.disconnect?.(); }
+        finally { process.exit(0); }
+    };
+
+    process.on("SIGINT", shutdown);
+    process.on("SIGTERM", shutdown);
+
+    start();
+};
+
+bootstrap();

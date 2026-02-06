@@ -17,7 +17,7 @@
         "dev:admin": "npm --prefix services/admin-service run dev",
         "dev:fortune": "npm --prefix services/fortune-service run dev",
         "dev:auth": "npm --prefix services/auth-service run dev",
-        "dev:all": "concurrently -n \"user-service,order-service,product-service,receipt-service,admin-service,fortune-service,auth-service\" -c \"green,magenta,yellow,blue,cyan,yellowBright,white\" \"npm run dev:users\" \"npm run dev:orders\" \"npm run dev:products\" \"npm run dev:receipts\" \"npm run dev:admin\" \"npm run dev:fortune\" \"npm run dev:auth\"",
+        "dev:all": "concurrently -n \"user-service,order-service,product-service,receipt-service,admin-service,fortune-service,auth-service\" -c \"green,magenta,yellow,blue,cyan,red,white\" \"npm run dev:users\" \"npm run dev:orders\" \"npm run dev:products\" \"npm run dev:receipts\" \"npm run dev:admin\" \"npm run dev:fortune\" \"npm run dev:auth\"",
         
         "build:common": "npm -w @ms/common run build",
         "clean:common": "npm -w @ms/common run clean",
