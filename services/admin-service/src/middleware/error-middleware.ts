@@ -8,7 +8,10 @@ class ErrorMiddleware {
         console.error(err);
 
 
-        const status: number = err?.status || StatusCode.InternalServerError;
+        const status =
+            Number((err as any)?.statusCode) ||
+            Number((err as any)?.status) ||
+            StatusCode.InternalServerError;
         const payload: any = { error: err?.message || `Internal Server Error` };
 
         if (err?.service) payload.service = err.service;
