@@ -1,21 +1,14 @@
 import { AuthClient } from "@ms/common/clients";
 import { StatusCode } from "@ms/common/enums";
 import { BadRequestError } from "@ms/common/errors";
-import { securityMiddleware } from "@ms/common/middleware";
+import { asyncHandler, securityMiddleware } from "@ms/common/middleware";
 import { Request, Response, Router } from "express";
 import { env } from "../config/env";
 import { receiptService } from "../services/receipt-service";
-import { asyncHandler } from "../utils/async-handler";
-
-
-
 
 const router = Router();
 const authClient = new AuthClient(env.authServiceBaseUrl);
 const verifyToken = securityMiddleware.createVerifyToken(authClient);
-
-
-
 
 router.get("/:orderId/html", verifyToken, asyncHandler(async (req: Request, res: Response) => {
     const orderId = req.params.orderId;

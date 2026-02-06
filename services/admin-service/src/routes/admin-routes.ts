@@ -1,13 +1,12 @@
 import { StatusCode } from "@ms/common/enums";
 import { fetchWithTimeout } from "@ms/common/http";
+import { asyncHandler } from "@ms/common/middleware";
 import { Request, Response, Router } from "express";
 import { env } from "../config/env";
 import { verifyAdmin, verifyLoggedIn, verifyToken } from "../middleware/security-middleware";
 import { LoginViewModel } from "../models/types";
 import { adminService } from "../services/admin-service";
-import { asyncHandler } from "../utils/async-handler";
 import { htmlTemplate } from "../utils/html-template";
-
 
 
 const router = Router();
@@ -72,6 +71,7 @@ router.post("/login", asyncHandler(async (req: Request, res: Response) => {
 
 router.post("/logout", asyncHandler(async (_req: Request, res: Response) => {
     res.clearCookie("admin_token", { path: "/" });
+    res.redirect("/api/admin/login");
 }));
 
 router.get("/", verifyToken, verifyLoggedIn, verifyAdmin,

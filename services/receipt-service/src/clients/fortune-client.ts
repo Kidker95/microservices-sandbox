@@ -6,13 +6,13 @@ class FortuneClient {
 
     private readonly fortuneBaseUrl = env.fortuneServiceBaseUrl;
     private readonly fallback: Fortune[] = [{
-        fortune: "This is only a fallback. something is wrong with fortune-service",
+        fortune: "This is a fallback fortune. something is wrong with fortune-service 🤷🏻‍♂️",
         author: "Omri",
         source: "My head",
         fetchedAt: new Date().toISOString()
     }]
 
-   
+
 
     public async getFortune(limit?: number): Promise<Fortune[]> {
         try {

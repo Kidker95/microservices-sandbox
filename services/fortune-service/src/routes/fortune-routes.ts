@@ -3,4 +3,4 @@ import { fortuneController } from "../controllers/fortune-controller";
 
 export const fortuneRouter = express.Router();
 
-fortuneRouter.get("/fortune", fortuneController.getFortune.bind(fortuneController));
+fortuneRouter.get("/", fortuneController.getFortune.bind(fortuneController));
