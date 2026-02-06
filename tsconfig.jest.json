@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@ms/common": ["packages/ms-common/src/index.ts"],
+      "@ms/common/*": ["packages/ms-common/src/*"]
+    }
+  },
+  "include": [
+    "tests/**/*.ts",
+    "services/**/*.ts",
+    "packages/ms-common/src/**/*.ts"
+  ],
+  "exclude": [
+    "**/dist",
+    "**/node_modules"
+  ]
+}
