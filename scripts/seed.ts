@@ -7,12 +7,58 @@ const SEED_ORDERS = Number(process.env.SEED_ORDERS ?? 200);
 const ROOT_ADMIN_EMAIL = process.env.SEED_ROOT_ADMIN_EMAIL || "seed-root-admin@sandbox.com";
 const ROOT_ADMIN_PASSWORD = process.env.SEED_ROOT_ADMIN_PASSWORD || "SeedRootAdmin!123";
 
+const runInDocker =
+    process.argv.includes("--docker") ||
+    process.env.SEED_TARGET?.toLowerCase() === "docker" ||
+    process.env.SEED_DOCKER === "1" ||
+    process.env.SEED_DOCKER?.toLowerCase() === "true";
+
+const runViaGateway =
+    process.argv.includes("--gateway") ||
+    process.env.SEED_TARGET?.toLowerCase() === "gateway" ||
+    process.env.SEED_GATEWAY === "1" ||
+    process.env.SEED_GATEWAY?.toLowerCase() === "true";
+
+const defaultServiceUrls = runViaGateway
+    ? {
+        users: "http://localhost:8080",
+        orders: "http://localhost:8080",
+        products: "http://localhost:8080",
+        auth: "http://localhost:8080"
+    }
+    : runInDocker
+    ? {
+        users: "http://user-service:4001",
+        orders: "http://order-service:4002",
+        products: "http://product-service:4003",
+        auth: "http://auth-service:4007"
+    }
+    : {
+        users: "http://localhost:4001",
+        orders: "http://localhost:4002",
+        products: "http://localhost:4003",
+        auth: "http://localhost:4007"
+    };
+
 const services = {
-    users: "http://localhost:4001",
-    orders: "http://localhost:4002",
-    products: "http://localhost:4003",
-    auth: "http://localhost:4007"
+    users: process.env.SEED_USERS_SERVICE_URL || defaultServiceUrls.users,
+    orders: process.env.SEED_ORDERS_SERVICE_URL || defaultServiceUrls.orders,
+    products: process.env.SEED_PRODUCTS_SERVICE_URL || defaultServiceUrls.products,
+    auth: process.env.SEED_AUTH_SERVICE_URL || defaultServiceUrls.auth
 } as const;
+
+const healthUrls = {
+    users: process.env.SEED_USERS_HEALTH_URL || (runViaGateway ? `${services.users}/api/users/health` : `${services.users}/health`),
+    orders: process.env.SEED_ORDERS_HEALTH_URL || (runViaGateway ? `${services.orders}/api/orders/health` : `${services.orders}/health`),
+    products: process.env.SEED_PRODUCTS_HEALTH_URL || (runViaGateway ? `${services.products}/api/products/health` : `${services.products}/health`),
+    auth: process.env.SEED_AUTH_HEALTH_URL || (runViaGateway ? `${services.auth}/api/auth/health` : `${services.auth}/health`)
+} as const;
+
+const modeLabel = runViaGateway
+    ? "Running seed on through nginx gateway🌐"
+    : runInDocker
+        ? "Running seed on Docker🐳"
+        : "Running seed locally💻";
 
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= H E L P E R S =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
@@ -32,8 +78,8 @@ async function readJsonSafe(res: Response): Promise<any> {
     try { return JSON.parse(text); } catch { return { raw: text }; }
 }
 
-async function checkHealth(name: string, baseUrl: string): Promise<void> {
-    const res = await fetchWithTimeout(`${baseUrl}/health`, { method: "GET" }, 4000);
+async function checkHealth(name: string, healthUrl: string): Promise<void> {
+    const res = await fetchWithTimeout(healthUrl, { method: "GET" }, 4000);
     const data = await readJsonSafe(res);
 
     if (!res.ok) {
@@ -243,12 +289,17 @@ function createProductPayload(i: number) {
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= M A I N =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 async function main(): Promise<void> {
+    console.log(modeLabel);
+    console.log("Service targets:", services);
+    if (runViaGateway) {
+        console.log("Gateway health targets:", healthUrls);
+    }
     line();
     console.log("Checking services health...");
-    await checkHealth("user-service", services.users);
-    await checkHealth("product-service", services.products);
-    await checkHealth("order-service", services.orders);
-    await checkHealth("auth-service", services.auth);
+    await checkHealth("user-service", healthUrls.users);
+    await checkHealth("product-service", healthUrls.products);
+    await checkHealth("order-service", healthUrls.orders);
+    await checkHealth("auth-service", healthUrls.auth);
     line();
 
     console.log("Logging in as root admin...");

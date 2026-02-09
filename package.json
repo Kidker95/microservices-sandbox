@@ -9,9 +9,10 @@
         "packages/*"
     ],
     "scripts": {
-        "test": "jest --slowTestThreshold=20",
+        "test": "jest",
 
         "seed": "ts-node --project tsconfig.json scripts/seed.ts",
+        "seed:docker": "ts-node --project tsconfig.json scripts/seed.ts --gateway",
         
         "dev:users": "npm --prefix services/user-service run dev",
         "dev:orders": "npm --prefix services/order-service run dev",

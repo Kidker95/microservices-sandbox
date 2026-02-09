@@ -56,6 +56,15 @@
       "build": "tsc -p tsconfig.json",
       "clean": "rm -rf dist"
     },
-    "dependencies": {}
+    "dependencies": {
+      "cookie-parser": "^1.4.7",
+      "express": "^5.1.0",
+      "mongoose": "^8.20.1"
+    },
+    "devDependencies": {
+      "@types/cookie-parser": "^1.4.10",
+      "@types/express": "^5.0.6",
+      "typescript": "^5.9.3"
+    }
   }
   
