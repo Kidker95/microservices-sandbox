@@ -1,31 +1,28 @@
 services:
   mongo:
     image: mongo:7
-    container_name: mongo
     ports:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
 
   auth-service:
-    build: ./services/auth-service
-    container_name: auth-service
+    build:
+      context: .
+      dockerfile: services/auth-service/Dockerfile
     env_file:
       - ./services/auth-service/.env
     environment:
-      # override localhost DB if your .env still uses localhost
       MONGO_CONNECTION_STRING: mongodb://mongo:27017/auth
-      # hard-standardize the secret name used by code
       JWT_SECRET: ${JWT_SECRET}
       USER_SERVICE_BASE_URL: http://user-service:4001
     depends_on:
       - mongo
-    ports:
-      - "4007:4007"
 
   user-service:
-    build: ./services/user-service
-    container_name: user-service
+    build:
+      context: .
+      dockerfile: services/user-service/Dockerfile
     env_file:
       - ./services/user-service/.env
     environment:
@@ -34,12 +31,12 @@ services:
     depends_on:
       - mongo
       - auth-service
-    ports:
-      - "4001:4001"
+
 
   product-service:
-    build: ./services/product-service
-    container_name: product-service
+    build:
+      context: .
+      dockerfile: services/product-service/Dockerfile
     env_file:
       - ./services/product-service/.env
     environment:
@@ -48,12 +45,12 @@ services:
     depends_on:
       - mongo
       - auth-service
-    ports:
-      - "4003:4003"
+
 
   order-service:
-    build: ./services/order-service
-    container_name: order-service
+    build:
+      context: .
+      dockerfile: services/order-service/Dockerfile
     env_file:
       - ./services/order-service/.env
     environment:
@@ -66,12 +63,12 @@ services:
       - auth-service
       - user-service
       - product-service
-    ports:
-      - "4002:4002"
+
 
   receipt-service:
-    build: ./services/receipt-service
-    container_name: receipt-service
+    build:
+      context: .
+      dockerfile: services/receipt-service/Dockerfile
     env_file:
       - ./services/receipt-service/.env
     environment:
@@ -86,20 +83,20 @@ services:
       - user-service
       - product-service
       - fortune-service
-    ports:
-      - "4004:4004"
+
 
   fortune-service:
-    build: ./services/fortune-service
-    container_name: fortune-service
+    build:
+      context: .
+      dockerfile: services/fortune-service/Dockerfile
     env_file:
       - ./services/fortune-service/.env
-    ports:
-      - "4006:4006"
+
 
   admin-service:
-    build: ./services/admin-service
-    container_name: admin-service
+    build:
+      context: .
+      dockerfile: services/admin-service/Dockerfile
     env_file:
       - ./services/admin-service/.env
     environment:
@@ -109,7 +106,6 @@ services:
       PRODUCT_SERVICE_BASE_URL: http://product-service:4003
       RECEIPT_SERVICE_BASE_URL: http://receipt-service:4004
       FORTUNE_SERVICE_BASE_URL: http://fortune-service:4006
-      # optional (if you use it in admin-service):
       NGINX_HEALTH_URL: http://gateway:8080
     depends_on:
       - auth-service
@@ -118,8 +114,7 @@ services:
       - product-service
       - receipt-service
       - fortune-service
-    ports:
-      - "4005:4005"
+ 
 
   nginx:
     image: nginx:alpine
@@ -127,7 +122,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./infra/nginx/nginx.docker.conf:/etc/nginx/nginx.conf:ro
     depends_on:
       - admin-service
       - auth-service
@@ -136,6 +131,19 @@ services:
       - product-service
       - receipt-service
       - fortune-service
+
+  seed:
+    image: node:20-alpine
+    profiles: ["tools"]
+    working_dir: /repo
+    volumes:
+      - ./:/repo
+    command: sh -c "npm ci && npm run seed -- --docker"
+    depends_on:
+      - auth-service
+      - user-service
+      - product-service
+      - order-service
 
 volumes:
   mongo_data:
