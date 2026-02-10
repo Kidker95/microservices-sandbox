@@ -84,4 +84,90 @@ describe("order-service", () => {
             .set("Authorization", "Bearer other")
             .expect(403);
     });
+
+    test("GET /api/orders/me returns 401 without token, 200 with token", async () => {
+        const { app } = loadOrderApp();
+        await request(app).get("/api/orders/me").expect(401);
+
+        const userId = "507f1f77bcf86cd799439011";
+        const { app: userApp, orderService } = loadOrderApp(() =>
+            jest.fn(async () => ({ ...makeAuthContext(UserRole.User), userId } as any))
+        );
+        orderService.getMyOrders = jest.fn().mockResolvedValue([]);
+        const res = await request(userApp)
+            .get("/api/orders/me")
+            .set("Authorization", "Bearer token")
+            .expect(200);
+        expect(Array.isArray(res.body)).toBe(true);
+    });
+
+    test("GET /api/orders/:orderId/user/:userId admin only: 401, 403, 200", async () => {
+        const { app } = loadOrderApp();
+        await request(app).get("/api/orders/oid/user/uid").expect(401);
+
+        const { app: userApp } = loadOrderApp(() =>
+            jest.fn(async () => makeAuthContext(UserRole.User))
+        );
+        await request(userApp)
+            .get("/api/orders/507f1f77bcf86cd799439011/user/507f1f77bcf86cd799439011")
+            .set("Authorization", "Bearer user")
+            .expect(403);
+
+        const { app: adminApp, orderService } = loadOrderApp(() =>
+            jest.fn(async () => makeAuthContext(UserRole.Admin))
+        );
+        orderService.getOrderWithUser = jest.fn().mockResolvedValue({
+            order: { _id: "oid", userId: "uid" },
+            user: { _id: "uid", email: "u@x.com" }
+        });
+        const res = await request(adminApp)
+            .get("/api/orders/507f1f77bcf86cd799439011/user/507f1f77bcf86cd799439011")
+            .set("Authorization", "Bearer admin")
+            .expect(200);
+        expect(res.body.order).toBeDefined();
+        expect(res.body.user).toBeDefined();
+    });
+
+    test("POST /api/orders returns 401 without token, 201 with token", async () => {
+        const { app } = loadOrderApp();
+        await request(app).post("/api/orders").send({ items: [], shippingAddress: {} }).expect(401);
+
+        const { app: userApp, orderService } = loadOrderApp(() =>
+            jest.fn(async () => makeAuthContext(UserRole.User))
+        );
+        const created = {
+            _id: "507f1f77bcf86cd799439022",
+            userId: "507f1f77bcf86cd799439011",
+            items: [],
+            status: "pending",
+            total: 0
+        };
+        orderService.addOrder = jest.fn().mockResolvedValue(created);
+        const res = await request(userApp)
+            .post("/api/orders")
+            .set("Authorization", "Bearer token")
+            .send({ items: [], shippingAddress: { fullName: "A", street: "1", country: "IL", zipCode: "1" } })
+            .expect(201);
+        expect(res.body._id).toBeDefined();
+    });
+
+    test("DELETE /api/orders admin only: 401, 403, 200", async () => {
+        const { app } = loadOrderApp();
+        await request(app).delete("/api/orders").expect(401);
+
+        const { app: userApp } = loadOrderApp(() =>
+            jest.fn(async () => makeAuthContext(UserRole.User))
+        );
+        await request(userApp).delete("/api/orders").set("Authorization", "Bearer user").expect(403);
+
+        const { app: adminApp, orderService } = loadOrderApp(() =>
+            jest.fn(async () => makeAuthContext(UserRole.Admin))
+        );
+        orderService.deleteAll = jest.fn().mockResolvedValue(3);
+        const res = await request(adminApp)
+            .delete("/api/orders")
+            .set("Authorization", "Bearer admin")
+            .expect(200);
+        expect(res.body.deleted).toBe(3);
+    });
 });

@@ -10,7 +10,7 @@ const loadAuthAppForLogin = () => {
 
     jest.isolateModules(() => {
         jest.doMock("../../services/auth-service/src/models/credentials-model", () => ({
-            CredentialsModel: { findOne: jest.fn() }
+            CredentialsModel: { findOne: jest.fn(), create: jest.fn() }
         }));
         jest.doMock("../../services/auth-service/src/utils/hashing", () => ({
             hashing: {
@@ -31,20 +31,34 @@ const loadAuthAppForLogin = () => {
     return { app, CredentialsModel, hashing, userClient };
 };
 
+type AuthServiceOverrides = {
+    register?: jest.Mock;
+    login?: jest.Mock;
+    registerFactory?: (errors: { BadRequestError: any; UnauthorizedError: any }) => jest.Mock;
+    loginFactory?: (errors: { BadRequestError: any; UnauthorizedError: any }) => jest.Mock;
+};
+
 const loadAuthAppWithMockedAuthService = (
     verifyTokenFactory: (errors: { UnauthorizedError: any }) => any,
-    deleteAllImpl: any
+    deleteAllImpl: any,
+    overrides?: AuthServiceOverrides
 ) => {
     let app: any;
     jest.isolateModules(() => {
-        const { UnauthorizedError } = require("@ms/common/errors");
-        const verifyTokenImpl = verifyTokenFactory({ UnauthorizedError });
+        const errors = require("@ms/common/errors");
+        const verifyTokenImpl = verifyTokenFactory({ UnauthorizedError: errors.UnauthorizedError });
+        const registerMock = overrides?.registerFactory
+            ? overrides.registerFactory(errors)
+            : overrides?.register ?? jest.fn();
+        const loginMock = overrides?.loginFactory
+            ? overrides.loginFactory(errors)
+            : overrides?.login ?? jest.fn();
         jest.doMock("../../services/auth-service/src/services/auth-service", () => ({
             authService: {
                 verifyToken: verifyTokenImpl,
                 deleteAllExceptEmail: deleteAllImpl,
-                register: jest.fn(),
-                login: jest.fn(),
+                register: registerMock,
+                login: loginMock,
                 logout: jest.fn()
             }
         }));
@@ -128,5 +142,71 @@ describe("auth-service", () => {
             .set("Authorization", "Bearer user")
             .set("x-seed-wipe", "true")
             .expect(403);
+    });
+
+    test("POST /register success returns 201 and token", async () => {
+        const registerMock = jest.fn().mockResolvedValue("jwt-token-from-register");
+        const { app } = loadAuthAppWithMockedAuthService(() => jest.fn(), jest.fn(), { register: registerMock });
+        const res = await request(app)
+            .post("/api/auth/register")
+            .send({
+                email: "new@example.com",
+                password: "secret",
+                name: "New User",
+                address: { fullName: "New", street: "1 St", country: "IL", zipCode: "123" }
+            })
+            .expect(201);
+
+        expect(typeof res.body.token).toBe("string");
+        expect(res.body.token).toBe("jwt-token-from-register");
+    });
+
+    test("POST /register duplicate email returns 400", async () => {
+        const { app } = loadAuthAppWithMockedAuthService(() => jest.fn(), jest.fn(), {
+            registerFactory: (e) => jest.fn().mockRejectedValue(new e.BadRequestError("User already exists"))
+        });
+        await request(app)
+            .post("/api/auth/register")
+            .send({
+                email: "exists@example.com",
+                password: "secret",
+                name: "User",
+                address: { fullName: "U", street: "1 St", country: "IL", zipCode: "123" }
+            })
+            .expect(400);
+    });
+
+    test("POST /login wrong password returns 401", async () => {
+        const { app } = loadAuthAppWithMockedAuthService(() => jest.fn(), jest.fn(), {
+            loginFactory: (e) => jest.fn().mockRejectedValue(new e.UnauthorizedError("Invalid email or password"))
+        });
+        await request(app)
+            .post("/api/auth/login")
+            .send({ email: "admin@example.com", password: "wrong" })
+            .expect(401);
+    });
+
+    test("POST /login missing fields returns 400", async () => {
+        const { app } = loadAuthAppForLogin();
+
+        await request(app)
+            .post("/api/auth/login")
+            .send({ email: "admin@example.com" })
+            .expect(400);
+
+        await request(app)
+            .post("/api/auth/login")
+            .send({ password: "pw" })
+            .expect(400);
+    });
+
+    test("POST /logout returns 200", async () => {
+        const { app } = loadAuthAppForLogin();
+
+        const res = await request(app)
+            .post("/api/auth/logout")
+            .expect(200);
+
+        expect(res.body.ok).toBe(true);
     });
 });

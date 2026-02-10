@@ -2,7 +2,7 @@ import request from "supertest";
 import { UserRole } from "@ms/common";
 import { makeAuthContext } from "../utils/auth";
 
-const loadReceiptApp = (verifyTokenImpl: any) => {
+const loadReceiptApp = (verifyTokenImpl: any, receiptServiceMock?: { generatePdf?: jest.Mock }) => {
     let app: any;
     let orderClient: any;
     let userClient: any;
@@ -19,6 +19,15 @@ const loadReceiptApp = (verifyTokenImpl: any) => {
                     `<html>${view.orderId}|${view.customerName}|${view.total}</html>`
             }
         }));
+
+        if (receiptServiceMock?.generatePdf) {
+            jest.doMock("../../services/receipt-service/src/services/receipt-service", () => ({
+                receiptService: {
+                    generateHtml: jest.fn(),
+                    generatePdf: receiptServiceMock.generatePdf
+                }
+            }));
+        }
 
         ({ app } = require("../../services/receipt-service/src/app-for-test"));
         ({ orderClient } = require("../../services/receipt-service/src/clients/order-client"));
@@ -98,5 +107,22 @@ describe("receipt-service", () => {
         expect(res.text).toContain(orderId);
         expect(res.text).toContain("Jane Doe");
         expect(res.text).toContain("110");
+    });
+
+    test("GET /api/receipts/:id/pdf returns 200, application/pdf, non-empty body", async () => {
+        const orderId = "507f1f77bcf86cd799439012";
+        const pdfBuffer = Buffer.from("%PDF-1.4 mock pdf content");
+        const authVerify = jest.fn(async () => makeAuthContext(UserRole.User));
+        const { app } = loadReceiptApp(authVerify, {
+            generatePdf: jest.fn().mockResolvedValue(pdfBuffer)
+        });
+
+        const res = await request(app)
+            .get(`/api/receipts/${orderId}/pdf`)
+            .set("Authorization", "Bearer good")
+            .expect(200);
+
+        expect(res.headers["content-type"]).toContain("application/pdf");
+        expect(Buffer.isBuffer(res.body) || res.body?.length > 0).toBe(true);
     });
 });

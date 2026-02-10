@@ -13,6 +13,7 @@ class Env {
     public readonly fortuneServiceBaseUrl: string = envHelpers.requireUrlEnv("FORTUNE_SERVICE_BASE_URL");
     public readonly authServiceBaseUrl: string = envHelpers.requireUrlEnv("AUTH_SERVICE_BASE_URL");
     public readonly nginxHealthUrl: string = envHelpers.requireUrlEnv("NGINX_HEALTH_URL");
+    public readonly gatewayBaseUrl: string = envHelpers.getEnv("GATEWAY_BASE_URL", "http://localhost:8080")!;
 }
 
 export const env = new Env();

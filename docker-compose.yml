@@ -107,6 +107,7 @@ services:
       RECEIPT_SERVICE_BASE_URL: http://receipt-service:4004
       FORTUNE_SERVICE_BASE_URL: http://fortune-service:4006
       NGINX_HEALTH_URL: http://gateway:8080
+      GATEWAY_BASE_URL: http://nginx:8080
     depends_on:
       - auth-service
       - user-service

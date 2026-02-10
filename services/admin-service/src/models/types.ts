@@ -1,5 +1,5 @@
 import { ServiceName } from "@ms/common/enums";
-import { ServiceStatus } from "@ms/common/types";
+import { RemoteOrder, ServiceStatus } from "@ms/common/types";
 
 export type BasicService = {
     name: ServiceName;
@@ -9,6 +9,9 @@ export type BasicService = {
 export interface DashboardViewModel {
     generatedAt: string;
     services: ServiceStatus[];
+    orders: DashboardOrderRow[];
+    ordersError?: string;
+    seedJob: SeedJobStatus;
     summary: {
         total: number;
         up: number;
@@ -21,3 +24,24 @@ export type LoginViewModel = {
     email?: string;
     next?: string;
 };
+
+export type DashboardOrderRow = {
+    orderId: string;
+    userName: string;
+    userEmail: string;
+    shippingSummary: string;
+    total: string;
+};
+
+export type SeedJobState = "idle" | "running" | "done" | "error";
+
+export type SeedJobStatus = {
+    state: SeedJobState;
+    percent: number;
+    message: string;
+    startedAt?: string;
+    finishedAt?: string;
+    error?: string;
+};
+
+export type AdminOrder = RemoteOrder;

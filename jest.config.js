@@ -2,7 +2,7 @@
 module.exports = {
     preset: "ts-jest",
     testEnvironment: "node",
-    slowTestThreshold: 20,
+    slowTestThreshold: 26,
     testMatch: ["<rootDir>/tests/**/*.test.ts"],
     setupFiles: ["<rootDir>/tests/setup-env.ts"],
     setupFilesAfterEnv: ["<rootDir>/tests/setup-jest.ts"],

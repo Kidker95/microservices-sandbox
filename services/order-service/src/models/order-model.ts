@@ -47,7 +47,7 @@ const OrderSchema = new Schema<OrderDocument>({
     status: {
         type: String,
         enum: Object.values(OrderStatus),
-        default: OrderStatus.Pending
+        default: OrderStatus.Paid
     },
     subtotal: {
         type: Number,

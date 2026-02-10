@@ -41,13 +41,15 @@ class HtmlTemplate {
             return "rt-fast";
         });
 
+        Handlebars.registerHelper("toJson", (value: unknown) => JSON.stringify(value));
+
     }
 
     public loadTemplate(fileName: string): string {
         const distPath = path.join(process.cwd(), "dist", "templates", fileName);
         const srcPath = path.join(process.cwd(), "src", "templates", fileName);
-
-        const fullPath = fs.existsSync(distPath) ? distPath : srcPath;
+        const isDev = process.env.NODE_ENV !== "production";
+        const fullPath = isDev && fs.existsSync(srcPath) ? srcPath : (fs.existsSync(distPath) ? distPath : srcPath);
         return fs.readFileSync(fullPath, "utf-8");
     }
 
@@ -61,8 +63,9 @@ class HtmlTemplate {
         const css = `${sharedCss}\n\n${serviceCss}`;
 
         const template = Handlebars.compile(templateSource);
+        const nginxOk = view.services?.find((s: { name: string }) => s.name === "nginx")?.ok ?? false;
 
-        return template({ ...view, css });
+        return template({ ...view, css, nginxOk });
     }
 
     public renderLoginPage(view: LoginViewModel): string {

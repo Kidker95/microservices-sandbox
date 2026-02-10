@@ -63,6 +63,50 @@ h1 {
     overflow: hidden;
 }
 
+.table.compact {
+    margin-top: 10px;
+}
+
+.orders-scroll {
+    max-height: 300px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border-radius: 10px;
+    position: relative;
+    scrollbar-color: rgba(241, 196, 15, 0.4) rgba(255, 255, 255, 0.08);
+    scrollbar-width: thin;
+}
+
+.orders-scroll::-webkit-scrollbar {
+    width: 10px;
+}
+
+.orders-scroll::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+}
+
+.orders-scroll::-webkit-scrollbar-thumb {
+    background: rgba(241, 196, 15, 0.4);
+    border-radius: 999px;
+}
+
+.orders-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(241, 196, 15, 0.55);
+}
+
+.orders-scroll thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: #1a1f2a;
+}
+
+.orders-small {
+    font-size: 12px;
+    line-height: 1.3;
+}
+
 th,
 td {
     padding: 12px;
@@ -97,6 +141,21 @@ th {
     max-width: 420px;
     word-break: break-word;
     opacity: 0.9;
+}
+
+.actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.receipt-action {
+    text-decoration: none;
+    color: #e8e8e8;
+}
+
+.receipt-action:hover {
+    text-decoration: none;
 }
 
 .footer {
@@ -151,17 +210,67 @@ th {
     border-color: rgba(255, 255, 255, 0.35);
 }
 
-.logout-form {
-    display: inline;
-    margin-left: 8px;
+.pill-ghost:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
-.pill-ghost {
-    background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.15);
+.panel {
+    margin-top: 16px;
+    padding: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.02);
+    position: relative;
+}
+
+.panel-summary {
     cursor: pointer;
+    font-weight: 700;
 }
 
-.pill-ghost:hover {
-    border-color: rgba(255, 255, 255, 0.35);
+.panel-title {
+    margin: 0 0 8px;
+    font-size: 18px;
+}
+
+.alert {
+    margin-top: 10px;
+    background: rgba(231, 76, 60, 0.16);
+    border: 1px solid rgba(231, 76, 60, 0.22);
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 13px;
+}
+
+.seed-gateway-hint {
+    margin-bottom: 10px;
+    font-size: 13px;
+}
+
+.seed-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.seed-progress-wrap {
+    margin-top: 10px;
+    width: 100%;
+    height: 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+}
+
+.seed-progress {
+    height: 100%;
+    width: 0;
+    background: rgba(46, 204, 113, 0.7);
+    transition: width 180ms ease-out;
+}
+
+.hidden {
+    display: none;
 }
