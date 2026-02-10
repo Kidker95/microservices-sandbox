@@ -3,8 +3,8 @@
 
 <head>
     <meta charset="utf-8" />
-    <meta http-equiv="refresh" content="5" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="/api/admin/favicon.png" type="image/png" />
     <title>Admin Panel</title>
     <style>{{{css}}}</style>
 </head>
@@ -63,10 +63,270 @@
             </tbody>
         </table>
 
+        <section class="panel seed-panel" id="seed-section" data-seed-state='{{{toJson seedJob}}}' data-nginx-ok="{{nginxOk}}">
+            <h2 class="panel-title">Run seed</h2>
+            {{#unless nginxOk}}
+            <div class="seed-gateway-hint muted">Seed runs when nginx is on. Turn nginx on to run the seed from the dashboard.</div>
+            {{/unless}}
+            <div class="seed-controls">
+                <button id="run-seed-btn" type="button" class="pill pill-ghost" {{#unless nginxOk}}disabled{{/unless}}>Run seed</button>
+                <span id="seed-status" class="mono muted">{{seedJob.message}}</span>
+            </div>
+            <div class="seed-progress-wrap" role="progressbar" aria-valuemin="0" aria-valuemax="100"
+                aria-valuenow="{{seedJob.percent}}">
+                <div id="seed-progress" class="seed-progress" style="width: {{seedJob.percent}}%;"></div>
+            </div>
+            <div id="seed-error" class="alert {{#unless seedJob.error}}hidden{{/unless}}">{{seedJob.error}}</div>
+        </section>
+
+        <details class="panel" id="orders-panel" open>
+            <summary class="panel-summary">Orders (<span id="orders-count">{{orders.length}}</span>)</summary>
+
+            <div id="orders-error" class="alert {{#unless ordersError}}hidden{{/unless}}">{{ordersError}}</div>
+
+            <div class="orders-scroll">
+                <table class="table compact">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>User</th>
+                            <th>Shipping</th>
+                            <th>Total</th>
+                            <th>Receipt</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orders-tbody" class="orders-small">
+                        {{#each orders}}
+                        <tr>
+                            <td class="mono">{{orderId}}</td>
+                            <td>
+                                <div class="orders-small">{{userName}}</div>
+                                <div class="muted mono">{{userEmail}}</div>
+                            </td>
+                            <td class="orders-small">{{shippingSummary}}</td>
+                            <td class="mono">{{total}}</td>
+                            <td class="actions">
+                                <a class="rt rt-medium receipt-action" href="/api/admin/receipts/{{orderId}}/html"
+                                    target="_blank" rel="noreferrer">View HTML</a>
+                                <a class="rt rt-medium receipt-action"
+                                    href="/api/admin/receipts/{{orderId}}/pdf">Download PDF</a>
+                            </td>
+                        </tr>
+                        {{/each}}
+                        {{#unless orders.length}}
+                        <tr>
+                            <td colspan="5" class="muted">No orders found.</td>
+                        </tr>
+                        {{/unless}}
+                    </tbody>
+                </table>
+            </div>
+        </details>
+
         <footer class="footer">
-            Auto-refresh every 5 seconds.
+            Dashboard data is generated server-side.
         </footer>
     </div>
+
+    <script>
+        (function () {
+            const section = document.getElementById("seed-section");
+            if (!section) return;
+
+            const button = document.getElementById("run-seed-btn");
+            const status = document.getElementById("seed-status");
+            const bar = document.getElementById("seed-progress");
+            const errorBox = document.getElementById("seed-error");
+            const progressWrap = section.querySelector(".seed-progress-wrap");
+            const ordersPanel = document.getElementById("orders-panel");
+            const ordersBody = document.getElementById("orders-tbody");
+            const ordersCount = document.getElementById("orders-count");
+            const ordersError = document.getElementById("orders-error");
+            let pollHandle = null;
+            let previousState = "idle";
+            let ordersLock = false;
+            const nginxOk = section.dataset.nginxOk === "true";
+
+            function setOrdersLocked(locked) {
+                ordersLock = locked;
+                if (ordersPanel) {
+                    if (locked) {
+                        ordersPanel.removeAttribute("open");
+                        ordersPanel.style.pointerEvents = "none";
+                    } else {
+                        ordersPanel.style.pointerEvents = "auto";
+                    }
+                }
+            }
+
+            let current = { state: "idle", percent: 0, message: "Idle" };
+            try {
+                current = JSON.parse(section.dataset.seedState || "{}");
+            } catch (_) { }
+
+            function renderOrders(rows) {
+                if (!ordersBody) return;
+                ordersBody.innerHTML = "";
+
+                if (!Array.isArray(rows) || rows.length === 0) {
+                    const tr = document.createElement("tr");
+                    const td = document.createElement("td");
+                    td.colSpan = 5;
+                    td.className = "muted";
+                    td.textContent = "No orders found.";
+                    tr.appendChild(td);
+                    ordersBody.appendChild(tr);
+                    if (ordersCount) ordersCount.textContent = "0";
+                    return;
+                }
+
+                for (const row of rows) {
+                    const tr = document.createElement("tr");
+
+                    const orderId = document.createElement("td");
+                    orderId.className = "mono";
+                    orderId.textContent = row.orderId || "";
+
+                    const user = document.createElement("td");
+                    const userName = document.createElement("div");
+                    userName.textContent = row.userName || "Unknown";
+                    const userEmail = document.createElement("div");
+                    userEmail.className = "muted mono";
+                    userEmail.textContent = row.userEmail || "Unknown";
+                    user.appendChild(userName);
+                    user.appendChild(userEmail);
+
+                    const shipping = document.createElement("td");
+                    shipping.textContent = row.shippingSummary || "Unknown";
+
+                    const total = document.createElement("td");
+                    total.className = "mono";
+                    total.textContent = row.total || "";
+
+                    const actions = document.createElement("td");
+                    actions.className = "actions";
+
+                    const htmlLink = document.createElement("a");
+                    htmlLink.className = "rt rt-medium receipt-action";
+                    htmlLink.href = `/api/admin/receipts/${row.orderId}/html`;
+                    htmlLink.target = "_blank";
+                    htmlLink.rel = "noreferrer";
+                    htmlLink.textContent = "View HTML";
+
+                    const pdfLink = document.createElement("a");
+                    pdfLink.className = "rt rt-medium receipt-action";
+                    pdfLink.href = `/api/admin/receipts/${row.orderId}/pdf`;
+                    pdfLink.textContent = "Download PDF";
+
+                    actions.appendChild(htmlLink);
+                    actions.appendChild(pdfLink);
+
+                    tr.appendChild(orderId);
+                    tr.appendChild(user);
+                    tr.appendChild(shipping);
+                    tr.appendChild(total);
+                    tr.appendChild(actions);
+                    ordersBody.appendChild(tr);
+                }
+
+                if (ordersCount) ordersCount.textContent = String(rows.length);
+            }
+
+            async function refreshOrdersFromDashboard() {
+                try {
+                    const res = await fetch("/api/admin/status", { credentials: "same-origin" });
+                    const data = await res.json();
+                    renderOrders(data.orders || []);
+
+                    if (ordersError) {
+                        if (data.ordersError) {
+                            ordersError.textContent = data.ordersError;
+                            ordersError.classList.remove("hidden");
+                        } else {
+                            ordersError.classList.add("hidden");
+                        }
+                    }
+                } catch (_) {
+                    if (ordersError) {
+                        ordersError.textContent = "Failed to refresh orders";
+                        ordersError.classList.remove("hidden");
+                    }
+                }
+            }
+
+            function applyState(next) {
+                previousState = current.state || "idle";
+                current = next || current;
+                const pct = Math.max(0, Math.min(100, Number(current.percent || 0)));
+                if (bar) bar.style.width = pct + "%";
+                if (progressWrap) progressWrap.setAttribute("aria-valuenow", String(pct));
+
+                if (status) {
+                    const suffix = current.state === "running" ? ` (${pct}%)` : "";
+                    status.textContent = (current.message || "Idle") + suffix;
+                }
+
+                if (button) button.disabled = !nginxOk || current.state === "running";
+                setOrdersLocked(current.state === "running");
+                if (errorBox) {
+                    if (current.error) {
+                        errorBox.textContent = current.error;
+                        errorBox.classList.remove("hidden");
+                    } else {
+                        errorBox.classList.add("hidden");
+                    }
+                }
+
+                if (current.state !== "running" && pollHandle) {
+                    clearInterval(pollHandle);
+                    pollHandle = null;
+                }
+
+                if (previousState === "running" && current.state === "done") {
+                    window.location.reload();
+                }
+            }
+
+            async function fetchStatus() {
+                const res = await fetch("/api/admin/seed/status", { credentials: "same-origin" });
+                const data = await res.json();
+                applyState(data);
+            }
+
+            async function startSeed() {
+                if (!button) return;
+                if (!nginxOk) return;
+                button.disabled = true;
+                if (status) status.textContent = "Starting...";
+
+                try {
+                    const res = await fetch("/api/admin/seed/start", {
+                        method: "POST",
+                        credentials: "same-origin"
+                    });
+                    const data = await res.json();
+                    applyState(data);
+
+                    if (!pollHandle) {
+                        pollHandle = setInterval(() => {
+                            fetchStatus().catch(() => {
+                                if (status) status.textContent = "Unable to read seed status";
+                            });
+                        }, 800);
+                    }
+                } catch (_) {
+                    button.disabled = false;
+                    if (status) status.textContent = "Failed to start seed";
+                }
+            }
+
+            if (button) button.addEventListener("click", startSeed);
+            applyState(current);
+            if (current.state === "running") {
+                pollHandle = setInterval(() => { fetchStatus().catch(() => { }); }, 800);
+            }
+        })();
+    </script>
 </body>
 
 </html>

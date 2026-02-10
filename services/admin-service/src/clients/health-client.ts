@@ -6,7 +6,7 @@ import { fetchWithTimeout } from "@ms/common/http";
 
 class HealthClient {
 
-    private readonly timeoutMs: number = 1500;
+    private readonly timeoutMs: number = 8000;
 
     private healthRoutes: BasicService[] = [
         { name: ServiceName.UserService, baseUrl: env.userServiceBaseUrl },
@@ -21,12 +21,9 @@ class HealthClient {
     private async checkOne(service: BasicService): Promise<ServiceStatus> {
         const checkedAt = new Date().toISOString();
         const start = Date.now();
-    
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
-    
+
         try {
-            const response = await fetchWithTimeout(`${service.baseUrl}/health`, { signal: controller.signal });
+            const response = await fetchWithTimeout(`${service.baseUrl}/health`, {}, this.timeoutMs);
             const responseTimeMs = Date.now() - start;
     
             let data: any = null;
@@ -68,8 +65,6 @@ class HealthClient {
                 error: isTimeout ? "timeout" : (err?.message || "fetch failed"),
                 checkedAt
             };
-        } finally {
-            clearTimeout(timeoutId);
         }
     }
     
